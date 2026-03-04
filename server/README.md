@@ -16,16 +16,41 @@ Node.js + Express + MongoDB 后端服务，提供 admin / author / public API。
 
 ## 环境变量
 
-复制 `server/.env.example` → `server/.env`，至少填写：
+### 首次使用必看：MongoDB 用户创建
 
-```
-MONGO_USERNAME=...
-MONGO_PASSWORD=...
-MONGO_DBNAME=...
-JWT_SECRET=...  # 强随机字符串
+Server 启动前必须先在 MongoDB 中创建数据库和用户：
+
+```javascript
+// 1. 进入 MongoDB Shell（终端输入 mongosh）
+// 2. 执行以下命令：
+
+use myblog  // 数据库名可自定义
+
+db.createUser({
+  user: "bloguser",
+  pwd: "your_password",
+  roles: [
+    { role: "readWrite", db: "myblog" },
+    { role: "dbAdmin", db: "myblog" }
+  ]
+})
 ```
 
-常用可选项：
+### 配置 .env
+
+复制 `server/.env.example` → `server/.env`：
+
+```bash
+MONGO_USERNAME=bloguser        # 与 createUser 中的 user 一致
+MONGO_PASSWORD=your_password   # 与 createUser 中的 pwd 一致
+MONGO_DBNAME=myblog            # 与 use xxx 一致
+JWT_SECRET=your_random_secret  # 随意设置长字符串
+```
+
+**注意**：如果用户创建在 `admin` 数据库，需额外添加 `MONGO_AUTH_SOURCE=admin`。
+
+### 其他可选配置
+
 - `PORT`（默认 3000）
 - `UPLOAD_DIR`（单一目录名，禁止包含 `/` 或 `..`）
 

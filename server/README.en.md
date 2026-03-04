@@ -16,16 +16,41 @@ Node.js + Express + MongoDB backend providing admin / author / public APIs.
 
 ## Env
 
-Copy `server/.env.example` → `server/.env` and set:
+### First-time Setup: Create MongoDB User
 
-```
-MONGO_USERNAME=...
-MONGO_PASSWORD=...
-MONGO_DBNAME=...
-JWT_SECRET=...  # strong random string
+You must create a database and user in MongoDB before starting the server:
+
+```javascript
+// 1. Enter MongoDB Shell (run mongosh in terminal)
+// 2. Execute:
+
+use myblog  // database name can be customized
+
+db.createUser({
+  user: "bloguser",
+  pwd: "your_password",
+  roles: [
+    { role: "readWrite", db: "myblog" },
+    { role: "dbAdmin", db: "myblog" }
+  ]
+})
 ```
 
-Optional:
+### Configure .env
+
+Copy `server/.env.example` → `server/.env`:
+
+```bash
+MONGO_USERNAME=bloguser        # match createUser user field
+MONGO_PASSWORD=your_password   # match createUser pwd field
+MONGO_DBNAME=myblog            # match use xxx
+JWT_SECRET=your_random_secret  # any long random string
+```
+
+**Note**: If user was created in `admin` database, add `MONGO_AUTH_SOURCE=admin` to `.env`.
+
+### Other Optional Config
+
 - `PORT` (default 3000)
 - `UPLOAD_DIR` (single path segment only; no `/` or `..`)
 

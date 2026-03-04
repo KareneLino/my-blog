@@ -40,17 +40,100 @@ pnpm -C admin install
 pnpm -C frontend install
 ```
 
-### 2) 配置环境变量
+### 2) MongoDB 安装与配置（首次使用必看）
 
-**Server（必须）**  
-复制 `server/.env.example` → `server/.env`，至少填写：
+如果你还没有安装 MongoDB，请先安装：
+- **Windows**: https://www.mongodb.com/try/download/community
+- **macOS**: `brew tap mongodb/brew && brew install mongodb-community`
+- **Ubuntu**: https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-ubuntu/
 
+安装完成后，**必须完成以下步骤才能启动 Server**：
+
+#### Step 1: 启动 MongoDB 服务
+
+```bash
+# Windows (以管理员身份运行 PowerShell)
+net start MongoDB
+
+# macOS
+brew services start mongodb-community
+
+# Ubuntu
+sudo systemctl start mongod
 ```
-MONGO_USERNAME=...
-MONGO_PASSWORD=...
-MONGO_DBNAME=...
-JWT_SECRET=...  # 强随机字符串
+
+#### Step 2: 创建数据库和用户
+
+打开 MongoDB Shell（终端输入 `mongosh` 或 `mongo`），依次执行：
+
+```javascript
+// 1. 切换到业务数据库（名称可自定义，这里用 myblog）
+use myblog
+
+// 2. 创建用户（用户名和密码请自行修改）
+db.createUser({
+  user: "bloguser",
+  pwd: "your_password",
+  roles: [
+    { role: "readWrite", db: "myblog" },
+    { role: "dbAdmin", db: "myblog" }
+  ]
+})
+
+// 3. 验证用户创建成功
+db.getUsers()
 ```
+
+看到类似下面的输出说明创建成功：
+```json
+{
+  "users": [
+    {
+      "user": "bloguser",
+      "db": "myblog",
+      "roles": [
+        { "role": "readWrite", "db": "myblog" },
+        { "role": "dbAdmin", "db": "myblog" }
+      ]
+    }
+  ]
+}
+```
+
+#### Step 3: 配置 Server 环境变量
+
+复制 `server/.env.example` → `server/.env`，按实际情况填写：
+
+```bash
+# Server 端口
+PORT=3000
+
+# MongoDB 连接信息（必须与 Step 2 中的一致）
+MONGO_USERNAME=bloguser        # 你创建的用户名
+MONGO_PASSWORD=your_password   # 你设置的密码
+MONGO_DBNAME=myblog            # 数据库名称（必须与 use xxx 一致）
+MONGO_HOST=127.0.0.1           # MongoDB 地址（本地保持默认）
+MONGO_PORT=27017               # MongoDB 端口（默认 27017）
+
+# JWT 密钥（用于登录验证，随意设置一个长字符串）
+JWT_SECRET=your_super_secret_key_here_at_least_32_chars
+
+# 管理员账号（首次启动后会自动创建）
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=admin123
+```
+
+**⚠️ 常见问题**：如果启动时报 `Authentication failed`，检查：
+1. 用户名/密码是否与 Step 2 创建时一致
+2. `MONGO_DBNAME` 是否与 `use xxx` 的数据库名一致
+3. MongoDB 服务是否已启动（`net start MongoDB` 或 `brew services list`）
+
+**特殊情况**：如果你之前已经在 `admin` 数据库创建了用户，需要在 `.env` 中额外添加：
+```bash
+MONGO_AUTH_SOURCE=admin
+```
+
+**高级**：如果你手动设置了完整的 `MONGO_URI`，请确保 URI 中包含正确的 `authSource` 参数（如 `?authSource=admin`），此时 `MONGO_AUTH_SOURCE` 变量不会生效。
 
 **Admin（可选）**  
 复制 `admin/.env.example` → `admin/.env.local`：

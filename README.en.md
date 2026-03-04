@@ -40,17 +40,100 @@ pnpm -C admin install
 pnpm -C frontend install
 ```
 
-### 2) Env config
+### 2) MongoDB Installation & Setup (Required for First-time Users)
 
-**Server (required)**  
-Copy `server/.env.example` → `server/.env` and set:
+If you haven't installed MongoDB yet:
+- **Windows**: https://www.mongodb.com/try/download/community
+- **macOS**: `brew tap mongodb/brew && brew install mongodb-community`
+- **Ubuntu**: https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-ubuntu/
 
+**You MUST complete the following steps before starting the Server:**
+
+#### Step 1: Start MongoDB Service
+
+```bash
+# Windows (run PowerShell as Administrator)
+net start MongoDB
+
+# macOS
+brew services start mongodb-community
+
+# Ubuntu
+sudo systemctl start mongod
 ```
-MONGO_USERNAME=...
-MONGO_PASSWORD=...
-MONGO_DBNAME=...
-JWT_SECRET=...  # strong random string
+
+#### Step 2: Create Database and User
+
+Open MongoDB Shell (run `mongosh` or `mongo` in terminal), then execute:
+
+```javascript
+// 1. Switch to your business database (name it as you like, here we use myblog)
+use myblog
+
+// 2. Create a user (change username and password as needed)
+db.createUser({
+  user: "bloguser",
+  pwd: "your_password",
+  roles: [
+    { role: "readWrite", db: "myblog" },
+    { role: "dbAdmin", db: "myblog" }
+  ]
+})
+
+// 3. Verify user was created
+db.getUsers()
 ```
+
+You should see output like:
+```json
+{
+  "users": [
+    {
+      "user": "bloguser",
+      "db": "myblog",
+      "roles": [
+        { "role": "readWrite", "db": "myblog" },
+        { "role": "dbAdmin", "db": "myblog" }
+      ]
+    }
+  ]
+}
+```
+
+#### Step 3: Configure Server Environment Variables
+
+Copy `server/.env.example` → `server/.env` and fill in your details:
+
+```bash
+# Server port
+PORT=3000
+
+# MongoDB connection (must match Step 2)
+MONGO_USERNAME=bloguser        # username you created
+MONGO_PASSWORD=your_password   # password you set
+MONGO_DBNAME=myblog            # database name (must match "use xxx")
+MONGO_HOST=127.0.0.1           # MongoDB address (keep default for local)
+MONGO_PORT=27017               # MongoDB port (default 27017)
+
+# JWT secret (for authentication, use any long random string)
+JWT_SECRET=your_super_secret_key_here_at_least_32_chars
+
+# Admin account (auto-created on first startup)
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=admin123
+```
+
+**⚠️ Common Issues**: If you get `Authentication failed` on startup, check:
+1. Username/password match what you created in Step 2
+2. `MONGO_DBNAME` matches the database name in `use xxx`
+3. MongoDB service is running (`net start MongoDB` or `brew services list`)
+
+**Special Case**: If you previously created the user in the `admin` database, add to `.env`:
+```bash
+MONGO_AUTH_SOURCE=admin
+```
+
+**Advanced**: If you manually set the full `MONGO_URI`, make sure it includes the correct `authSource` parameter (e.g., `?authSource=admin`). The `MONGO_AUTH_SOURCE` variable will not be used when `MONGO_URI` is provided.
 
 **Admin (optional)**  
 Copy `admin/.env.example` → `admin/.env.local`:

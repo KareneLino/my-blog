@@ -31,10 +31,11 @@ export function loadScriptEnv(): ScriptEnv {
 
   const dbName = required('MONGO_DBNAME');
 
+  const authSource = process.env.MONGO_AUTH_SOURCE || dbName;
   const mongoUri =
     `mongodb://${required('MONGO_USERNAME')}:${required('MONGO_PASSWORD')}` +
     `@${required('MONGO_HOST')}:${required('MONGO_PORT')}/${dbName}` +
-    `?authSource=${dbName}`;
+    `?authSource=${authSource}`;
 
   return { mongoUri, dbName, adminUsername, adminPassword };
 }

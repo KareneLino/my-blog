@@ -23,7 +23,7 @@ export const env = {
   MONGO_URI:
     `mongodb://${required('MONGO_USERNAME')}:${required('MONGO_PASSWORD')}` +
     `@${required('MONGO_HOST')}:${required('MONGO_PORT')}/${required('MONGO_DBNAME')}` +
-    `?authSource=${required('MONGO_DBNAME')}`,
+    `?authSource=${process.env.MONGO_AUTH_SOURCE || required('MONGO_DBNAME')}`,
 
   JWT_SECRET: required('JWT_SECRET'),
 };
