@@ -54,33 +54,106 @@ sudo systemctl start mongod
 
 ### 2) 配置 MongoDB 认证（安全必须）
 
-**⚠️ 本项目要求 MongoDB 启用认证，默认配置需要你先创建数据库用户。**
+**⚠️ 本项目要求 MongoDB 启用认证，必须先创建数据库用户。**
 
-进入 MongoDB Shell 创建用户：
+#### 情况 A：首次配置（没有管理员账号）
+
+如果你的 MongoDB 刚安装且启用了认证（`authorization: enabled`），但还没有创建任何用户，你会看到 `Command createUser requires authentication` 错误。需要**临时关闭认证**来创建第一个管理员：
+
+**步骤 1：编辑 MongoDB 配置文件**
 
 ```bash
-# Windows (找到 mongosh 的安装路径，或直接使用 mongo)
+# Ubuntu/macOS
+sudo nano /etc/mongod.conf
+
+# Windows (用记事本或 VS Code 打开)
+notepad "C:\Program Files\MongoDB\Server\8.0\bin\mongod.cfg"
+```
+
+找到 `security` 部分，注释掉或删除：
+```yaml
+# 注释掉这两行
+# security:
+#   authorization: enabled
+```
+
+**步骤 2：重启 MongoDB**
+
+```bash
+# Ubuntu
+sudo systemctl restart mongod
+
+# macOS
+brew services restart mongodb-community
+
+# Windows (管理员 PowerShell)
+net stop MongoDB
+net start MongoDB
+```
+
+**步骤 3：创建用户（此时无需认证）**
+
+```bash
 mongosh
 
-# 创建数据库和用户
+# 创建业务数据库用户（推荐，权限最小化）
 use myblog
-
 db.createUser({
   user: "bloguser",
   pwd: "your_secure_password",
+  roles: [{ role: "readWrite", db: "myblog" }]
+})
+
+# 同时创建一个管理员（用于管理其他数据库）
+use admin
+db.createUser({
+  user: "admin",
+  pwd: "your_admin_password",
   roles: [
-    { role: "readWrite", db: "myblog" }
+    { role: "userAdminAnyDatabase", db: "admin" },
+    { role: "readWriteAnyDatabase", db: "admin" }
   ]
 })
 ```
 
-验证用户创建成功：
-```bash
-# 退出后重新连接验证
-mongosh myblog -u bloguser -p your_secure_password --authenticationDatabase myblog
+**步骤 4：重新启用认证**
+
+编辑配置文件，取消注释：
+```yaml
+security:
+  authorization: enabled
 ```
 
-> 💡 **关于 authSource**：如果用户创建在 `admin` 数据库，连接时需要 `authSource=admin`；如果创建在 `myblog` 数据库，使用 `authSource=myblog`（或省略，默认使用目标数据库）。
+重启 MongoDB 服务。
+
+**步骤 5：验证连接**
+
+```bash
+# 测试业务用户
+mongosh myblog -u bloguser -p your_secure_password --authenticationDatabase myblog
+
+# 测试管理员
+mongosh -u admin -p your_admin_password --authenticationDatabase admin
+```
+
+#### 情况 B：已有管理员账号
+
+如果你已经有管理员账号，直接登录创建业务用户：
+
+```bash
+# 用管理员登录
+mongosh -u admin -p your_admin_password --authenticationDatabase admin
+
+# 创建业务用户
+use myblog
+db.createUser({
+  user: "bloguser",
+  pwd: "your_secure_password",
+  roles: [{ role: "readWrite", db: "myblog" }]
+})
+```
+
+> 💡 **关于 authSource**：用户创建在哪个数据库，`authSource` 就填哪个。上面在 `myblog` 创建的用户，连接时用 `authSource=myblog`；在 `admin` 创建的用户，用 `authSource=admin`。
 
 ### 3) 配置 Server 环境变量
 

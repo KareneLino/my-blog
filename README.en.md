@@ -56,31 +56,104 @@ sudo systemctl start mongod
 
 **⚠️ This project requires MongoDB authentication. You must create a database user first.**
 
-Enter MongoDB Shell to create a user:
+#### Option A: First-time Setup (No Admin Account)
+
+If your MongoDB is freshly installed with authentication enabled (`authorization: enabled`) but no users created yet, you'll see `Command createUser requires authentication` error. You need to **temporarily disable authentication** to create the first admin:
+
+**Step 1: Edit MongoDB Config**
 
 ```bash
-# Windows (find mongosh path or use mongo)
+# Ubuntu/macOS
+sudo nano /etc/mongod.conf
+
+# Windows (open with Notepad or VS Code)
+notepad "C:\Program Files\MongoDB\Server\8.0\bin\mongod.cfg"
+```
+
+Find the `security` section and comment out or remove:
+```yaml
+# Comment out these lines
+# security:
+#   authorization: enabled
+```
+
+**Step 2: Restart MongoDB**
+
+```bash
+# Ubuntu
+sudo systemctl restart mongod
+
+# macOS
+brew services restart mongodb-community
+
+# Windows (Administrator PowerShell)
+net stop MongoDB
+net start MongoDB
+```
+
+**Step 3: Create Users (No auth required now)**
+
+```bash
 mongosh
 
-# Create database and user
+# Create app database user (recommended, least privilege)
 use myblog
-
 db.createUser({
   user: "bloguser",
   pwd: "your_secure_password",
+  roles: [{ role: "readWrite", db: "myblog" }]
+})
+
+# Also create an admin user (for managing other databases)
+use admin
+db.createUser({
+  user: "admin",
+  pwd: "your_admin_password",
   roles: [
-    { role: "readWrite", db: "myblog" }
+    { role: "userAdminAnyDatabase", db: "admin" },
+    { role: "readWriteAnyDatabase", db: "admin" }
   ]
 })
 ```
 
-Verify the connection:
-```bash
-# Exit and reconnect to verify
-mongosh myblog -u bloguser -p your_secure_password --authenticationDatabase myblog
+**Step 4: Re-enable Authentication**
+
+Edit config file, uncomment:
+```yaml
+security:
+  authorization: enabled
 ```
 
-> 💡 **About authSource**: If the user is created in the `admin` database, use `authSource=admin` when connecting; if created in `myblog` database, use `authSource=myblog` (or omit, as it defaults to the target database).
+Restart MongoDB service.
+
+**Step 5: Verify Connection**
+
+```bash
+# Test app user
+mongosh myblog -u bloguser -p your_secure_password --authenticationDatabase myblog
+
+# Test admin
+mongosh -u admin -p your_admin_password --authenticationDatabase admin
+```
+
+#### Option B: Already Have Admin Account
+
+If you already have an admin account, login and create the app user:
+
+```bash
+# Login as admin
+mongosh -u admin -p your_admin_password --authenticationDatabase admin
+
+# Create app user
+use myblog
+db.createUser({
+  user: "bloguser",
+  pwd: "your_secure_password",
+  roles: [{ role: "readWrite", db: "myblog" }]
+})
+```
+
+> 💡 **About authSource**: Use the database where the user was created. For users created in `myblog`, use `authSource=myblog`; for users created in `admin`, use `authSource=admin`.
 
 ### 3) Configure Server Environment Variables
 

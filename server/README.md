@@ -20,24 +20,56 @@ Node.js + Express + MongoDB 后端服务，提供 admin / author / public API。
 
 **⚠️ 安全要求：必须先创建数据库用户**
 
+#### 首次配置（没有管理员账号）
+
+如果你的 MongoDB 刚安装且启用了认证，但还没有创建用户，需要**临时关闭认证**来创建第一个管理员：
+
 ```bash
-# 进入 MongoDB Shell
+# 1. 编辑配置文件，注释掉 security 部分
+sudo nano /etc/mongod.conf
+# Windows: notepad "C:\Program Files\MongoDB\Server\8.0\bin\mongod.cfg"
+
+# 2. 重启 MongoDB
+sudo systemctl restart mongod  # Ubuntu
+brew services restart mongodb-community  # macOS
+
+# 3. 无需认证连接，创建用户
 mongosh
 
-# 创建数据库和用户
 use myblog
-
 db.createUser({
   user: "bloguser",
   pwd: "your_secure_password",
+  roles: [{ role: "readWrite", db: "myblog" }]
+})
+
+# 同时创建管理员（可选）
+use admin
+db.createUser({
+  user: "admin",
+  pwd: "your_admin_password",
   roles: [
-    { role: "readWrite", db: "myblog" }
+    { role: "userAdminAnyDatabase", db: "admin" },
+    { role: "readWriteAnyDatabase", db: "admin" }
   ]
 })
 
-# 验证连接
-exit
-mongosh myblog -u bloguser -p your_secure_password --authenticationDatabase myblog
+# 4. 重新启用认证（编辑配置文件，取消注释 security），然后重启
+```
+
+#### 已有管理员账号
+
+```bash
+# 用管理员登录
+mongosh -u admin -p your_admin_password --authenticationDatabase admin
+
+# 创建业务用户
+use myblog
+db.createUser({
+  user: "bloguser",
+  pwd: "your_secure_password",
+  roles: [{ role: "readWrite", db: "myblog" }]
+})
 ```
 
 ### 2. 配置环境变量

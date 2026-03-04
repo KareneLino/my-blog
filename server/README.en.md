@@ -20,24 +20,56 @@ Node.js + Express + MongoDB backend service providing admin / author / public AP
 
 **⚠️ Security Requirement: You must create a database user first**
 
+#### First-time Setup (No Admin Account)
+
+If your MongoDB is freshly installed with auth enabled but no users yet, **temporarily disable authentication** to create the first admin:
+
 ```bash
-# Enter MongoDB Shell
+# 1. Edit config, comment out security section
+sudo nano /etc/mongod.conf
+# Windows: notepad "C:\Program Files\MongoDB\Server\8.0\bin\mongod.cfg"
+
+# 2. Restart MongoDB
+sudo systemctl restart mongod  # Ubuntu
+brew services restart mongodb-community  # macOS
+
+# 3. Connect without auth, create users
 mongosh
 
-# Create database and user
 use myblog
-
 db.createUser({
   user: "bloguser",
   pwd: "your_secure_password",
+  roles: [{ role: "readWrite", db: "myblog" }]
+})
+
+# Also create admin (optional)
+use admin
+db.createUser({
+  user: "admin",
+  pwd: "your_admin_password",
   roles: [
-    { role: "readWrite", db: "myblog" }
+    { role: "userAdminAnyDatabase", db: "admin" },
+    { role: "readWriteAnyDatabase", db: "admin" }
   ]
 })
 
-# Verify connection
-exit
-mongosh myblog -u bloguser -p your_secure_password --authenticationDatabase myblog
+# 4. Re-enable auth (uncomment security in config), then restart
+```
+
+#### Already Have Admin Account
+
+```bash
+# Login as admin
+mongosh -u admin -p your_admin_password --authenticationDatabase admin
+
+# Create app user
+use myblog
+db.createUser({
+  user: "bloguser",
+  pwd: "your_secure_password",
+  roles: [{ role: "readWrite", db: "myblog" }]
+})
 ```
 
 ### 2. Configure Environment Variables
