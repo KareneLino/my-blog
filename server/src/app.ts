@@ -75,11 +75,11 @@ export const createApp = (): Express => {
 
   const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 5,
+    max: isDev ? 1000 : 5,  // 开发环境放宽到 1000 次
     standardHeaders: true,
     legacyHeaders: false,
-    skip: (req) => req.method === 'OPTIONS',
-    skipSuccessfulRequests: true,
+    skip: (req) => req.method === 'OPTIONS' || isDev,  // 开发环境完全跳过
+    skipSuccessfulRequests: !isDev,  // 开发环境不跳过成功请求
     handler: (_req, res) => sendRateLimit(res),
   });
 
