@@ -18,14 +18,21 @@ Node.js + Express + MongoDB 后端服务，提供 admin / author / public API。
 
 ### 首次使用必看：MongoDB 用户创建
 
-Server 启动前必须先在 MongoDB 中创建数据库和用户：
+Server 启动前必须先在 MongoDB 中创建 root 用户和业务用户：
 
 ```javascript
 // 1. 进入 MongoDB Shell（终端输入 mongosh）
-// 2. 执行以下命令：
+// 2. 创建 root 用户
+use admin
+db.createUser({
+  user: "myroot",
+  pwd: "root_password",
+  roles: [ { role: "userAdminAnyDatabase", db: "admin" }, "readWriteAnyDatabase" ]
+})
 
-use myblog  // 数据库名可自定义
-
+// 3. 用 root 登录，创建业务用户
+db.auth("myroot", "root_password")
+use myblog
 db.createUser({
   user: "bloguser",
   pwd: "your_password",
@@ -36,18 +43,20 @@ db.createUser({
 })
 ```
 
+完整步骤详见项目根目录 `README.md`。
+
 ### 配置 .env
 
 复制 `server/.env.example` → `server/.env`：
 
 ```bash
-MONGO_USERNAME=bloguser        # 与 createUser 中的 user 一致
-MONGO_PASSWORD=your_password   # 与 createUser 中的 pwd 一致
-MONGO_DBNAME=myblog            # 与 use xxx 一致
+MONGO_USERNAME=bloguser        # 业务用户名（与 createUser 中的 user 一致）
+MONGO_PASSWORD=your_password   # 业务用户密码
+MONGO_DBNAME=myblog            # 数据库名（与 use xxx 一致）
 JWT_SECRET=your_random_secret  # 随意设置长字符串
 ```
 
-**注意**：如果用户创建在 `admin` 数据库，需额外添加 `MONGO_AUTH_SOURCE=admin`。
+**注意**：如果业务用户创建在 `admin` 数据库，需额外添加 `MONGO_AUTH_SOURCE=admin`。
 
 ### 其他可选配置
 

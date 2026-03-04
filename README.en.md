@@ -62,15 +62,37 @@ brew services start mongodb-community
 sudo systemctl start mongod
 ```
 
-#### Step 2: Create Database and User
+#### Step 2: Create Root Admin User
 
-Open MongoDB Shell (run `mongosh` or `mongo` in terminal), then execute:
+Open MongoDB Shell (run `mongosh` or `mongo` in terminal), **first create the root user**:
 
 ```javascript
-// 1. Switch to your business database (name it as you like, here we use myblog)
+// Switch to admin database
+use admin
+
+// Create root user (change username and password as needed)
+db.createUser({
+  user: "myroot",
+  pwd: "root_password",
+  roles: [ 
+    { role: "userAdminAnyDatabase", db: "admin" },
+    "readWriteAnyDatabase"
+  ]
+})
+```
+
+> 💡 **Note**: MongoDB allows creating the first user without authentication when connecting from localhost. As long as you're connecting from the same machine, the above command will work directly.
+
+#### Step 3: Create Business Database and App User
+
+```javascript
+// 1. Authenticate as root
+db.auth("myroot", "root_password")
+
+// 2. Switch to business database (name it as you like, here we use myblog)
 use myblog
 
-// 2. Create a user (change username and password as needed)
+// 3. Create app user (for this blog system)
 db.createUser({
   user: "bloguser",
   pwd: "your_password",
@@ -80,55 +102,9 @@ db.createUser({
   ]
 })
 
-// 3. Verify user was created
+// 4. Verify user was created
 db.getUsers()
 ```
-
-**⚠️ If you get `Command createUser requires authentication` error**
-
-This means your MongoDB has access control enabled. Solutions:
-
-**Option A: Use localhost exception to create the first admin (recommended)**
-
-MongoDB allows creating the first user without authentication when connecting from localhost. Make sure you're connecting from the same machine, then:
-
-```javascript
-// 1. Switch to admin database
-db.adminCommand({ ping: 1 })  // ensure connection is ok
-
-// 2. Create a super admin user (if not exists)
-use admin
-db.createUser({
-  user: "admin",
-  pwd: "admin_password",
-  roles: [ { role: "userAdminAnyDatabase", db: "admin" }, "readWriteAnyDatabase" ]
-})
-
-// 3. Authenticate as admin
-db.auth("admin", "admin_password")
-
-// 4. Switch to business database and create app user
-use myblog
-db.createUser({
-  user: "bloguser",
-  pwd: "your_password",
-  roles: [
-    { role: "readWrite", db: "myblog" },
-    { role: "dbAdmin", db: "myblog" }
-  ]
-})
-```
-
-**Option B: Temporarily disable access control (dev environment only)**
-
-1. Stop MongoDB service
-2. Edit config file:
-   - Windows: `C:\Program Files\MongoDB\Server\X.X\bin\mongod.cfg`
-   - macOS: `/usr/local/etc/mongod.conf` or `/opt/homebrew/etc/mongod.conf`
-   - Ubuntu: `/etc/mongod.conf`
-3. Comment out or remove `authorization: enabled` in the `security:` section
-4. Restart MongoDB service
-5. After creating users, restore the config and restart
 
 You should see output like:
 ```json
@@ -146,7 +122,7 @@ You should see output like:
 }
 ```
 
-#### Step 3: Configure Server Environment Variables
+#### Step 4: Configure Server Environment Variables
 
 Copy `server/.env.example` → `server/.env` and fill in your details:
 
@@ -154,9 +130,9 @@ Copy `server/.env.example` → `server/.env` and fill in your details:
 # Server port
 PORT=3000
 
-# MongoDB connection (must match Step 2)
-MONGO_USERNAME=bloguser        # username you created
-MONGO_PASSWORD=your_password   # password you set
+# MongoDB connection (must match the app user created in Step 3)
+MONGO_USERNAME=bloguser        # app username (NOT the root username)
+MONGO_PASSWORD=your_password   # app user password
 MONGO_DBNAME=myblog            # database name (must match "use xxx")
 MONGO_HOST=127.0.0.1           # MongoDB address (keep default for local)
 MONGO_PORT=27017               # MongoDB port (default 27017)
@@ -169,17 +145,17 @@ ADMIN_USERNAME=admin
 ADMIN_PASSWORD=admin123
 ```
 
+> 💡 **Note**: The above configuration uses the **app user** (`bloguser`), not the root user. Since the app user was created in the `myblog` database, no additional `MONGO_AUTH_SOURCE` configuration is needed.
+
 **⚠️ Common Issues**: If you get `Authentication failed` on startup, check:
-1. Username/password match what you created in Step 2
-2. `MONGO_DBNAME` matches the database name in `use xxx`
+1. Username/password match the app user created in Step 3
+2. `MONGO_DBNAME` matches the database name in `use myblog`
 3. MongoDB service is running (`net start MongoDB` or `brew services list`)
 
-**Special Case**: If you previously created the user in the `admin` database, add to `.env`:
+**Special Case**: If you created the app user in the `admin` database (instead of `myblog`), add to `.env`:
 ```bash
 MONGO_AUTH_SOURCE=admin
 ```
-
-**Advanced**: If you manually set the full `MONGO_URI`, make sure it includes the correct `authSource` parameter (e.g., `?authSource=admin`). The `MONGO_AUTH_SOURCE` variable will not be used when `MONGO_URI` is provided.
 
 **Admin (optional)**  
 Copy `admin/.env.example` → `admin/.env.local`:

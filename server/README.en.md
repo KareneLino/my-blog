@@ -16,16 +16,23 @@ Node.js + Express + MongoDB backend providing admin / author / public APIs.
 
 ## Env
 
-### First-time Setup: Create MongoDB User
+### First-time Setup: Create MongoDB Users
 
-You must create a database and user in MongoDB before starting the server:
+You must create root and app users in MongoDB before starting the server:
 
 ```javascript
 // 1. Enter MongoDB Shell (run mongosh in terminal)
-// 2. Execute:
+// 2. Create root user
+use admin
+db.createUser({
+  user: "myroot",
+  pwd: "root_password",
+  roles: [ { role: "userAdminAnyDatabase", db: "admin" }, "readWriteAnyDatabase" ]
+})
 
-use myblog  // database name can be customized
-
+// 3. Login as root, create app user
+db.auth("myroot", "root_password")
+use myblog
 db.createUser({
   user: "bloguser",
   pwd: "your_password",
@@ -36,18 +43,20 @@ db.createUser({
 })
 ```
 
+See project root `README.md` for full instructions.
+
 ### Configure .env
 
 Copy `server/.env.example` → `server/.env`:
 
 ```bash
-MONGO_USERNAME=bloguser        # match createUser user field
-MONGO_PASSWORD=your_password   # match createUser pwd field
-MONGO_DBNAME=myblog            # match use xxx
+MONGO_USERNAME=bloguser        # app username (match createUser user field)
+MONGO_PASSWORD=your_password   # app user password
+MONGO_DBNAME=myblog            # database name (match use xxx)
 JWT_SECRET=your_random_secret  # any long random string
 ```
 
-**Note**: If user was created in `admin` database, add `MONGO_AUTH_SOURCE=admin` to `.env`.
+**Note**: If app user was created in `admin` database, add `MONGO_AUTH_SOURCE=admin` to `.env`.
 
 ### Other Optional Config
 
