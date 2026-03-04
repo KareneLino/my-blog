@@ -63,12 +63,13 @@ export const createApp = (): Express => {
     });
   };
 
+  const isDev = process.env.NODE_ENV !== 'production';
   const apiLimiter = rateLimit({
     windowMs: 60 * 1000,
-    max: 100,
+    max: isDev ? 1000 : 100,  // 开发环境放宽到 1000 次/分钟
     standardHeaders: true,
     legacyHeaders: false,
-    skip: (req) => req.method === 'OPTIONS',
+    skip: (req) => req.method === 'OPTIONS' || isDev,  // 开发环境完全跳过
     handler: (_req, res) => sendRateLimit(res),
   });
 
