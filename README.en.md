@@ -26,21 +26,13 @@ This repository contains three sub-projects: **Server / Admin / Frontend**:
 
 - Node.js 18+ (recommended 20+)
 - pnpm
-- MongoDB
+- MongoDB (authentication required)
 
 ---
 
 ## Quick Start (Local Development)
 
-### 1) Install Dependencies
-
-```bash
-pnpm -C server install
-pnpm -C admin install
-pnpm -C frontend install
-```
-
-### 2) Start MongoDB
+### 1) Install MongoDB and Start Service
 
 If you haven't installed MongoDB yet:
 - **Windows**: https://www.mongodb.com/try/download/community
@@ -60,28 +52,79 @@ brew services start mongodb-community
 sudo systemctl start mongod
 ```
 
-> 💡 MongoDB defaults to no authentication for local connections.
+### 2) Configure MongoDB Authentication (Required for Security)
 
-### 3) Configure & Start Server
+**⚠️ This project requires MongoDB authentication. You must create a database user first.**
+
+Enter MongoDB Shell to create a user:
 
 ```bash
-# Copy environment file (default config works out of the box)
+# Windows (find mongosh path or use mongo)
+mongosh
+
+# Create database and user
+use myblog
+
+db.createUser({
+  user: "bloguser",
+  pwd: "your_secure_password",
+  roles: [
+    { role: "readWrite", db: "myblog" }
+  ]
+})
+```
+
+Verify the connection:
+```bash
+# Exit and reconnect to verify
+mongosh myblog -u bloguser -p your_secure_password --authenticationDatabase myblog
+```
+
+> 💡 **About authSource**: If the user is created in the `admin` database, use `authSource=admin` when connecting; if created in `myblog` database, use `authSource=myblog` (or omit, as it defaults to the target database).
+
+### 3) Configure Server Environment Variables
+
+```bash
+# Copy environment template
 copy server\.env.example server\.env
 
-# Start Server
+# Edit .env file, fill in database authentication info
+MONGO_USERNAME=bloguser
+MONGO_PASSWORD=your_secure_password
+MONGO_AUTH_SOURCE=myblog  # If user created in admin db, change to admin
+```
+
+### 4) Install Dependencies
+
+```bash
+pnpm -C server install
+pnpm -C admin install
+pnpm -C frontend install
+```
+
+### 5) Start Server
+
+```bash
 pnpm -C server dev
 ```
 
-Done! Server runs at `http://localhost:3000`.
+Server runs at `http://localhost:3000`.
 
 **After first start, create an admin account:**
 
+The default admin account is already configured in `.env` (`ADMIN_USERNAME` and `ADMIN_PASSWORD`), just run:
+
 ```bash
 cd server
-npx ts-node src/scripts/createAdmin.ts --yes --username admin --password admin123
+npx ts-node src/scripts/createAdmin.ts --yes
 ```
 
-### 4) Configure Admin & Frontend (Optional)
+To use custom credentials, add parameters (higher priority than env vars):
+```bash
+npx ts-node src/scripts/createAdmin.ts --yes --username myadmin --password mypass123
+```
+
+### 6) Configure Admin & Frontend (Optional)
 
 ```bash
 # Admin
@@ -93,18 +136,13 @@ copy frontend\.env.example frontend\.env.local
 # Default config works
 ```
 
-### 5) Start All Services
+### 7) Start All Services
 
 ```bash
-pnpm -C server dev
-pnpm -C admin dev
-pnpm -C frontend dev
+pnpm -C server dev      # http://localhost:3000
+pnpm -C admin dev       # http://localhost:3001
+pnpm -C frontend dev    # http://localhost:4321
 ```
-
-Default ports:
-- Server: `http://localhost:3000`
-- Admin: `http://localhost:3001`
-- Frontend: `http://localhost:4321`
 
 ---
 
@@ -133,30 +171,37 @@ Script docs: `scripts/README.md`
 
 ---
 
-## Enable MongoDB Authentication (Optional)
+## Security Configuration
 
-If you need to enable MongoDB access control (e.g., for production):
+This project **requires MongoDB authentication by default** to prevent unauthorized access. To explicitly disable (not recommended, for special test environments only):
 
 ```bash
-# 1. Enter MongoDB Shell
-mongosh
+# Add to .env
+MONGO_AUTH_ENABLED=false
+```
 
-# 2. Create admin user
-use admin
-db.createUser({
-  user: "admin",
-  pwd: "password",
-  roles: [ "userAdminAnyDatabase", "readWriteAnyDatabase" ]
-})
+---
 
-# 3. Enable auth (edit mongod.conf, add)
-security:
-  authorization: enabled
+## Troubleshooting
 
-# 4. Modify server/.env
-MONGO_USERNAME=admin
-MONGO_PASSWORD=password
-MONGO_AUTH_SOURCE=admin
+### MongoDB Connection Failed
+
+**Error**: `MONGO_USERNAME is required for security reasons.`
+- **Cause**: Database authentication info not configured
+- **Fix**: Follow step 2 to create a user and configure in .env
+
+**Error**: `Authentication failed.`
+- **Cause**: Wrong username/password or incorrect authSource
+- **Fix**: Check MONGO_USERNAME, MONGO_PASSWORD, and MONGO_AUTH_SOURCE
+
+### View MongoDB Logs
+
+```bash
+# Windows
+type "C:\Program Files\MongoDB\Server\8.2\log\mongod.log"
+
+# macOS/Linux
+tail -f /var/log/mongodb/mongod.log
 ```
 
 ---

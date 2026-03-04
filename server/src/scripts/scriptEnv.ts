@@ -20,23 +20,48 @@ function optional(name: string, defaultValue: string): string {
   return process.env[name] || defaultValue;
 }
 
+// Check if authentication should be enabled
+// Default: true (security first!)
+function isAuthEnabled(): boolean {
+  const authEnabled = process.env.MONGO_AUTH_ENABLED?.toLowerCase();
+  return authEnabled !== 'false' && authEnabled !== '0';
+}
+
 // Build MongoDB connection URI
-// Supports both authenticated and non-authenticated modes
+// SECURITY: Authentication is REQUIRED by default
 function buildMongoUri(dbName: string): string {
   const host = optional('MONGO_HOST', '127.0.0.1');
   const port = optional('MONGO_PORT', '27017');
-  
+
   const username = process.env.MONGO_USERNAME?.trim() || '';
   const password = process.env.MONGO_PASSWORD?.trim() || '';
-  
-  // Non-authenticated mode (empty username)
-  if (!username) {
-    return `mongodb://${host}:${port}/${dbName}`;
+
+  const authEnabled = isAuthEnabled();
+
+  // Security check: auth is required by default
+  if (authEnabled) {
+    if (!username) {
+      throw new Error(
+        `MONGO_USERNAME is required for security reasons.\n` +
+        `Set MONGO_USERNAME and MONGO_PASSWORD in your .env file.\n` +
+        `If you MUST disable authentication (not recommended), set MONGO_AUTH_ENABLED=false`
+      );
+    }
+    if (!password) {
+      throw new Error(
+        `MONGO_PASSWORD is required when MONGO_USERNAME is set.\n` +
+        `Set MONGO_PASSWORD in your .env file.`
+      );
+    }
+
+    // Authenticated mode
+    const authSource = process.env.MONGO_AUTH_SOURCE || dbName;
+    return `mongodb://${username}:${password}@${host}:${port}/${dbName}?authSource=${authSource}`;
   }
-  
-  // Authenticated mode
-  const authSource = process.env.MONGO_AUTH_SOURCE || dbName;
-  return `mongodb://${username}:${password}@${host}:${port}/${dbName}?authSource=${authSource}`;
+
+  // Unauthenticated mode (explicitly disabled via MONGO_AUTH_ENABLED=false)
+  console.warn('⚠️  WARNING: MongoDB authentication is DISABLED. This is insecure and should only be used in isolated environments.');
+  return `mongodb://${host}:${port}/${dbName}`;
 }
 
 export function loadScriptEnv(): ScriptEnv {

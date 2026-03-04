@@ -26,6 +26,16 @@ function printHelp(): void {
 Usage:
   ts-node src/scripts/createAdmin.ts [--username <name>] [--password <pwd>] [--yes]
 
+Priority (highest first):
+  1. Command line: --username, --password
+  2. Environment:  ADMIN_USERNAME, ADMIN_PASSWORD (from .env)
+  3. Interactive:  Prompt for input (if not in --yes mode)
+
+Quick start (recommended):
+  # 1. Set in .env: ADMIN_USERNAME=admin, ADMIN_PASSWORD=yourpass
+  # 2. Run:
+  ts-node src/scripts/createAdmin.ts --yes
+
 Options:
   --username   Admin username (fallback: ADMIN_USERNAME env)
   --password   Admin password (fallback: ADMIN_PASSWORD env; interactive prompt if missing)
