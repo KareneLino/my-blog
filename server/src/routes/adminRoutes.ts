@@ -49,6 +49,7 @@ router.use('/config', adminConfigRoutes);
 router.use('/upload', adminUploadRoutes);
 router.use('/logs', logRoutes);
 
+
 // Admin Analytics Routes
 const adminInsightsQuerySchema = z.object({
   range: z.enum(['1h', '24h', '7d']).optional(),
