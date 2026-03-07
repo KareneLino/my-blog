@@ -6,6 +6,7 @@ import adminTagRoutes from './adminTagRoutes';
 import adminUserRoutes from './adminUserRoutes';
 import adminUploadRoutes from './adminUploadRoutes';
 import adminConfigRoutes from './adminConfigRoutes';
+import logRoutes from './logRoutes';
 import { adminAuthMiddleware } from '../middlewares/adminAuthMiddleware';
 import { requirePermission } from '../middlewares/requirePermission';
 import { Permissions } from '../permissions/permissions';
@@ -46,6 +47,7 @@ router.use('/tags', adminTagRoutes);
 router.use('/users', adminUserRoutes);
 router.use('/config', adminConfigRoutes);
 router.use('/upload', adminUploadRoutes);
+router.use('/logs', logRoutes);
 
 // Admin Analytics Routes
 const adminInsightsQuerySchema = z.object({
