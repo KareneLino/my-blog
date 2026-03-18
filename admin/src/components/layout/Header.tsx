@@ -8,17 +8,15 @@ import { useApp } from '../../context/AppContext';
  * Header - 顶部导航栏
  * 
  * 响应式设计：
- * - 移动端 (<lg): 显示汉堡菜单按钮，点击打开 MobileDrawer
- * - 桌面端 (>=lg): 隐藏汉堡菜单，Sidebar 直接可见
- * 
- * 右侧：通知 + 主题切换 + 用户头像
+ * - 移动端 (<lg): 显示汉堡菜单 + Logo，有背景横条
+ * - 桌面端 (>=lg): 仅显示右侧工具按钮，透明无横条（Sidebar 已提供导航）
  */
 export function Header() {
   const { setIsMobileMenuOpen } = useApp();
 
   return (
-    <header className="sticky top-0 z-30 w-full h-16 flex items-center px-4 sm:px-6 lg:px-10 bg-white/30 dark:bg-zinc-900/30 backdrop-blur-xl border-b border-white/20 dark:border-zinc-800/20">
-      {/* 左侧：移动端汉堡菜单 */}
+    <header className="sticky top-0 z-30 w-full h-16 flex items-center px-4 sm:px-6 lg:px-10 lg:bg-transparent lg:backdrop-blur-none lg:border-b-0 bg-white/30 dark:bg-zinc-900/30 backdrop-blur-xl border-b border-white/20 dark:border-zinc-800/20">
+      {/* 左侧：移动端汉堡菜单 + Logo */}
       <div className="flex items-center gap-4 lg:hidden">
         <Button
           variant="ghost"
@@ -31,12 +29,12 @@ export function Header() {
         </Button>
         
         {/* 移动端显示 Logo 文字 */}
-        <span className="text-lg font-serif font-bold text-zinc-900 dark:text-white lg:hidden">
+        <span className="text-lg font-serif font-bold text-zinc-900 dark:text-white">
           字里行间
         </span>
       </div>
 
-      {/* 右侧：工具按钮组 */}
+      {/* 右侧：工具按钮组（始终显示） */}
       <div className="ml-auto flex items-center gap-1 sm:gap-2">
         <Button 
           variant="ghost" 
