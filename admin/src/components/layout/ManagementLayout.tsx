@@ -36,6 +36,11 @@ interface ManagementLayoutProps {
 
 /**
  * ManagementLayout 统一管理页面容器
+ * 
+ * 响应式设计：
+ * - 移动端: px-4, 紧凑的间距
+ * - 桌面端: px-0 (由父容器控制), 宽松的间距
+ * 
  * 采用"Header -> [FilterBar] -> Content"三段式工业标准
  * 
  * 适用层级：
@@ -43,7 +48,6 @@ interface ManagementLayoutProps {
  * - 第三层级：部分功能页（如文章编辑的元数据面板）
  * 
  * @param showFilterBar - 是否显示筛选栏，默认为 true
- *                       Dashboard/Settings 等无筛选需求的页面可设为 false
  * @param animated - 是否启用入场动画，默认 true
  */
 export function ManagementLayout({
@@ -64,7 +68,7 @@ export function ManagementLayout({
   animated = true
 }: ManagementLayoutProps) {
   const content = (
-    <div className="max-w-[1400px] mx-auto space-y-12 pb-20 px-4 md:px-0">
+    <div className="max-w-[1400px] mx-auto space-y-6 sm:space-y-8 lg:space-y-12 pb-12 sm:pb-16 lg:pb-20 px-2 sm:px-4 lg:px-0">
       {/* 1. Header Section */}
       <PageHeader 
         title={title} 

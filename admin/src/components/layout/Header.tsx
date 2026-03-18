@@ -1,35 +1,60 @@
 import React from 'react';
-import { Menu, User, Bell } from 'lucide-react';
+import { Menu, Bell } from 'lucide-react';
 import { ThemeToggle } from '../ThemeToggle';
 import { Button } from '../ui/Button';
 import { useApp } from '../../context/AppContext';
 
+/**
+ * Header - 顶部导航栏
+ * 
+ * 响应式设计：
+ * - 移动端 (<lg): 显示汉堡菜单按钮，点击打开 MobileDrawer
+ * - 桌面端 (>=lg): 隐藏汉堡菜单，Sidebar 直接可见
+ * 
+ * 右侧：通知 + 主题切换 + 用户头像
+ */
 export function Header() {
   const { setIsMobileMenuOpen } = useApp();
 
   return (
-    <header className="sticky top-0 z-30 w-full h-16 flex items-center px-6 lg:px-10">
+    <header className="sticky top-0 z-30 w-full h-16 flex items-center px-4 sm:px-6 lg:px-10 bg-white/30 dark:bg-zinc-900/30 backdrop-blur-xl border-b border-white/20 dark:border-zinc-800/20">
+      {/* 左侧：移动端汉堡菜单 */}
       <div className="flex items-center gap-4 lg:hidden">
         <Button
           variant="ghost"
           size="icon"
           onClick={() => setIsMobileMenuOpen(true)}
-          className="text-zinc-500"
+          className="h-10 w-10 rounded-xl text-zinc-600 dark:text-zinc-400 hover:bg-white/50 dark:hover:bg-zinc-800/50"
+          aria-label="打开导航菜单"
         >
           <Menu className="h-5 w-5" />
         </Button>
+        
+        {/* 移动端显示 Logo 文字 */}
+        <span className="text-lg font-serif font-bold text-zinc-900 dark:text-white lg:hidden">
+          字里行间
+        </span>
       </div>
 
-      <div className="ml-auto flex items-center gap-2">
-        <Button variant="ghost" size="icon" className="text-zinc-500 relative">
+      {/* 右侧：工具按钮组 */}
+      <div className="ml-auto flex items-center gap-1 sm:gap-2">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="h-10 w-10 rounded-xl text-zinc-500 hover:bg-white/50 dark:hover:bg-zinc-800/50 relative"
+          aria-label="通知"
+        >
           <Bell className="h-5 w-5" />
-          <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-zinc-50 dark:border-zinc-950" />
+          <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-zinc-900" />
         </Button>
+        
         <ThemeToggle />
-        <div className="h-8 w-8 rounded-full bg-zinc-200 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 overflow-hidden ml-2 cursor-pointer hover:ring-2 ring-zinc-900/10 dark:ring-white/10 transition-all">
+        
+        {/* 用户头像 */}
+        <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-zinc-200 dark:bg-zinc-800 border-2 border-white dark:border-zinc-700 overflow-hidden ml-1 cursor-pointer hover:ring-2 ring-zinc-900/10 dark:ring-white/10 transition-all">
           <img
             src="https://api.dicebear.com/7.x/avataaars/svg?seed=Karene"
-            alt="User avatar"
+            alt="用户头像"
             className="w-full h-full object-cover"
           />
         </div>
