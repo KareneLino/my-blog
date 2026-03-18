@@ -67,27 +67,28 @@ export function MobileDrawer() {
   };
 
   return (
-    <AnimatePresence>
-      {isMobileMenuOpen && (
-        <>
-          {/* 遮罩层 */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            onClick={() => setIsMobileMenuOpen(false)}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
-          />
+    <div className="lg:hidden">
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <>
+            {/* 遮罩层 */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+            />
 
-          {/* 抽屉主体 */}
-          <motion.aside
-            initial={{ x: '-100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '-100%' }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="fixed left-0 top-0 h-full w-[280px] z-50 lg:hidden"
-          >
+            {/* 抽屉主体 */}
+            <motion.aside
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              className="fixed left-0 top-0 h-full w-[280px] z-50"
+            >
             <div className="h-full glass-sidebar flex flex-col overflow-hidden relative border-r border-white/30 dark:border-zinc-700/50 shadow-2xl">
               {/* Header */}
               <div className="h-16 flex items-center justify-between px-6 shrink-0 border-b border-zinc-200/20 dark:border-zinc-700/20">
@@ -157,5 +158,6 @@ export function MobileDrawer() {
         </>
       )}
     </AnimatePresence>
+    </div>
   );
 }

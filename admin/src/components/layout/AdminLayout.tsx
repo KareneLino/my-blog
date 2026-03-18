@@ -10,30 +10,18 @@ import { useTheme } from '../ThemeProvider';
 /**
  * AdminLayout - 后台管理主布局
  * 
- * 响应式设计：
- * - 桌面端 (>=lg): 固定 Sidebar (100px/300px) + 主内容区自适应
- * - 移动端 (<lg): Sidebar 隐藏，使用 MobileDrawer 抽屉导航，paddingLeft = 0
+ * 响应式设计（纯 CSS 方案）：
+ * - 移动端 (<lg): padding-left: 0，Sidebar 隐藏，使用 MobileDrawer
+ * - 桌面端 (>=lg): 
+ *   - Sidebar 展开: padding-left: 300px
+ *   - Sidebar 折叠: padding-left: 100px
  * 
- * 布局结构：
- * [Sidebar/Desktop] + [Header + Outlet]
- * [MobileDrawer] (仅在移动端通过汉堡菜单触发)
+ * 使用 CSS 媒体查询 + 类名切换，避免 JS/CSS 不同步问题
  */
 export function AdminLayout() {
   const { isSidebarCollapsed } = useApp();
   const { theme } = useTheme();
   const [isDark, setIsDark] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-
-  // 检测是否为移动端
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 1024);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   useEffect(() => {
     const checkDark = () => {
@@ -44,9 +32,6 @@ export function AdminLayout() {
     };
     setIsDark(checkDark());
   }, [theme]);
-
-  // 计算 paddingLeft：移动端始终为 0，桌面端根据 Sidebar 状态
-  const paddingLeft = isMobile ? 0 : (isSidebarCollapsed ? 100 : 300);
 
   return (
     <div className="relative min-h-screen font-sans overflow-x-hidden">
@@ -71,15 +56,17 @@ export function AdminLayout() {
         {/* 桌面端侧边栏 - lg 以下隐藏 */}
         <Sidebar />
 
-        {/* 移动端抽屉导航 */}
+        {/* 移动端抽屉导航 - lg 以上隐藏 */}
         <MobileDrawer />
 
-        {/* 主内容区 - 移动端无左间距，桌面端有 Sidebar 间距 */}
-        <motion.main
-          initial={false}
-          animate={{ paddingLeft }}
-          transition={{ type: 'spring', stiffness: 300, damping: 35 }}
-          className="flex flex-col min-h-screen"
+        {/* 主内容区 - 纯 CSS 响应式 padding */}
+        <main
+          className={`
+            flex flex-col min-h-screen
+            pl-0
+            lg:transition-[padding] lg:duration-300 lg:ease-out
+            ${isSidebarCollapsed ? 'lg:pl-[100px]' : 'lg:pl-[300px]'}
+          `}
         >
           <Header />
           
@@ -93,7 +80,7 @@ export function AdminLayout() {
               <Outlet />
             </motion.div>
           </div>
-        </motion.main>
+        </main>
       </div>
     </div>
   );
