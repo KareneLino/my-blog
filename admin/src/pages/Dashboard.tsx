@@ -20,6 +20,7 @@ import {
 } from 'recharts';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '../components/ui/Card';
+import { PageAction } from '../components/ui/PageAction';
 import { cn } from '../lib/utils';
 import { ManagementLayout } from '../components/layout/ManagementLayout';
 
@@ -77,9 +78,9 @@ const statsConfig = [
 /**
  * Dashboard - 工作台页面
  * 
- * 权限控制：
- * - 移动端 (< 1024px): 仅查看权限，不显示任何操作按钮
- * - 桌面端 (≥ 1024px): 完整权限，显示"下载报告" + "撰写新文章"按钮
+ * 响应式设计：
+ * - 移动端 (< 1280px): 包括 iPad Pro，仅查看权限
+ * - 桌面端 (≥ 1280px): 完整权限，显示操作按钮
  */
 export function Dashboard() {
   const navigate = useNavigate();
@@ -90,20 +91,22 @@ export function Dashboard() {
       subtitle="欢迎回来，Karene。这是你最近 7 天的创作概览。"
       showFilterBar={false}
       accentColor="blue"
-      // 操作按钮仅在桌面端显示（≥ 1024px）
+      // 操作按钮组 - 使用 PageAction 组件，仅桌面端显示
       headerActions={
-        <div className="hidden lg:flex items-center gap-3">
-          <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">
-            <Download className="h-4 w-4" />
-            下载报告
-          </button>
-          <button 
-            onClick={() => navigate('/articles/new')}
-            className="flex items-center gap-2 px-4 py-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-xl text-sm font-bold hover:opacity-90 transition-opacity"
+        <div className="hidden xl:flex items-center gap-3">
+          <PageAction 
+            icon={Download} 
+            variant="secondary"
+            onClick={() => {}}
           >
-            <Plus className="h-4 w-4" />
+            下载报告
+          </PageAction>
+          <PageAction 
+            icon={Plus}
+            onClick={() => navigate('/articles/new')}
+          >
             撰写新文章
-          </button>
+          </PageAction>
         </div>
       }
     >
@@ -169,7 +172,7 @@ export function Dashboard() {
               过去 7 天的全站浏览量分布
             </p>
           </div>
-          {/* 时间筛选 - 平板及以上显示 */}
+          {/* 时间筛选 */}
           <div className="hidden sm:flex items-center gap-2">
             {['7天', '30天', '90天'].map((period, i) => (
               <button
