@@ -78,8 +78,8 @@ const statsConfig = [
  * Dashboard - 工作台页面
  * 
  * 权限控制：
- * - 移动端 (< 768px): 仅查看权限，只显示"下载报告"按钮
- * - 桌面端 (≥ 768px): 完整权限，显示"下载报告" + "撰写新文章"按钮
+ * - 移动端 (< 1024px): 仅查看权限，不显示任何操作按钮
+ * - 桌面端 (≥ 1024px): 完整权限，显示"下载报告" + "撰写新文章"按钮
  */
 export function Dashboard() {
   const navigate = useNavigate();
@@ -90,24 +90,21 @@ export function Dashboard() {
       subtitle="欢迎回来，Karene。这是你最近 7 天的创作概览。"
       showFilterBar={false}
       accentColor="blue"
-      // 不在 primaryAction 放置按钮，全部放在 headerActions 统一控制
+      // 操作按钮仅在桌面端显示（≥ 1024px）
       headerActions={
-        <>
-          {/* 下载报告 - 所有设备可见，但移动端只显示图标 */}
-          <button className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">
+        <div className="hidden lg:flex items-center gap-3">
+          <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">
             <Download className="h-4 w-4" />
-            <span className="hidden sm:inline">下载报告</span>
+            下载报告
           </button>
-          
-          {/* 撰写新文章 - 仅桌面端可见 (≥ 768px) */}
           <button 
             onClick={() => navigate('/articles/new')}
-            className="hidden md:flex items-center gap-2 px-4 py-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-xl text-sm font-bold hover:opacity-90 transition-opacity"
+            className="flex items-center gap-2 px-4 py-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-xl text-sm font-bold hover:opacity-90 transition-opacity"
           >
             <Plus className="h-4 w-4" />
             撰写新文章
           </button>
-        </>
+        </div>
       }
     >
       {/* 统计卡片区域 */}
@@ -172,8 +169,8 @@ export function Dashboard() {
               过去 7 天的全站浏览量分布
             </p>
           </div>
-          {/* 时间筛选 */}
-          <div className="flex items-center gap-2">
+          {/* 时间筛选 - 平板及以上显示 */}
+          <div className="hidden sm:flex items-center gap-2">
             {['7天', '30天', '90天'].map((period, i) => (
               <button
                 key={period}
