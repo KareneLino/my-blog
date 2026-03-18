@@ -12,7 +12,7 @@ import { useTheme } from '../ThemeProvider';
  * 
  * 响应式设计：
  * - 桌面端 (>=lg): 固定 Sidebar (100px/300px) + 主内容区自适应
- * - 移动端 (<lg): Sidebar 隐藏，使用 MobileDrawer 抽屉导航
+ * - 移动端 (<lg): Sidebar 隐藏，使用 MobileDrawer 抽屉导航，paddingLeft = 0
  * 
  * 布局结构：
  * [Sidebar/Desktop] + [Header + Outlet]
@@ -22,6 +22,18 @@ export function AdminLayout() {
   const { isSidebarCollapsed } = useApp();
   const { theme } = useTheme();
   const [isDark, setIsDark] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // 检测是否为移动端
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     const checkDark = () => {
@@ -32,6 +44,9 @@ export function AdminLayout() {
     };
     setIsDark(checkDark());
   }, [theme]);
+
+  // 计算 paddingLeft：移动端始终为 0，桌面端根据 Sidebar 状态
+  const paddingLeft = isMobile ? 0 : (isSidebarCollapsed ? 100 : 300);
 
   return (
     <div className="relative min-h-screen font-sans overflow-x-hidden">
@@ -59,21 +74,12 @@ export function AdminLayout() {
         {/* 移动端抽屉导航 */}
         <MobileDrawer />
 
-        {/* 主内容区 */}
+        {/* 主内容区 - 移动端无左间距，桌面端有 Sidebar 间距 */}
         <motion.main
           initial={false}
-          animate={{ 
-            // 移动端: paddingLeft = 0 (Sidebar 隐藏)
-            // 桌面端: 根据 Sidebar 折叠状态
-            paddingLeft: isSidebarCollapsed ? 100 : 300,
-          }}
-          // 在移动端 (小于 lg) 时，强制 paddingLeft 为 0
-          className="flex flex-col min-h-screen lg:transition-[padding] lg:duration-300"
-          style={{
-            paddingLeft: typeof window !== 'undefined' && window.innerWidth < 1024 
-              ? 0 
-              : undefined
-          }}
+          animate={{ paddingLeft }}
+          transition={{ type: 'spring', stiffness: 300, damping: 35 }}
+          className="flex flex-col min-h-screen"
         >
           <Header />
           
