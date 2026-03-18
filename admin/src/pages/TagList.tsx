@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { useNavigate } from 'react-router-dom';
+import { AnimatePresence } from 'motion/react';
 import { 
   Plus, 
   Trash2, 
@@ -8,7 +7,6 @@ import {
   Feather,
   ArrowUpRight
 } from 'lucide-react';
-import { Button } from '../components/ui/Button';
 import { useApp } from '../context/AppContext';
 import { cn, getTagColor } from '../lib/utils';
 import { ManagementLayout } from '../components/layout/ManagementLayout';
@@ -30,7 +28,6 @@ const INITIAL_TAGS = [
 ];
 
 function TagTile({ tag, onClick, onEdit, onDelete }: { tag: any, onClick: () => void, onEdit: () => void, onDelete: () => void }) {
-  // 核心：全自动品牌识别
   const brand = useMemo(() => tag.isTech ? discoverBrand(tag.name) : null, [tag.name, tag.isTech]);
   const activeColor = tag.color || brand?.color || getTagColor(tag.name);
 
@@ -39,7 +36,7 @@ function TagTile({ tag, onClick, onEdit, onDelete }: { tag: any, onClick: () => 
   } : {};
 
   return (
-    <motion.div layout whileHover={{ y: -8, scale: 1.02 }} className="group relative">
+    <div className="group relative">
       <div 
         onClick={onClick}
         style={{ ...glowStyle }}
@@ -86,10 +83,16 @@ function TagTile({ tag, onClick, onEdit, onDelete }: { tag: any, onClick: () => 
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
+/**
+ * TagList - 标签管理页面
+ * 
+ * 层级：第一层级（导航页）
+ * 布局：使用 ManagementLayout（已内置动画）
+ */
 export function TagList() {
   const { confirm } = useApp();
   const [tags, setTags] = useState(INITIAL_TAGS);
@@ -147,50 +150,48 @@ export function TagList() {
   };
 
   return (
-    <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}>
-      <ManagementLayout
-        title="标签云"
-        subtitle="通过多维度的标签系统，为你的内容赋予灵魂。"
-        primaryAction={{ label: "新建标签", icon: Plus, onClick: handleNew }}
-        tabs={[{ label: '全部', value: 'ALL' }, { label: '科技', value: 'TECH' }, { label: '非科技', value: 'NO_TECH' }]}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        searchPlaceholder="快速检索标签..."
-        searchValue={searchQuery}
-        onSearchChange={setSearchQuery}
-        accentColor="amber"
-      >
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8 py-4 px-2">
-          <AnimatePresence mode="popLayout">
-            {filteredTags.map(tag => (
-              <TagTile 
-                key={tag.id} 
-                tag={tag} 
-                onClick={() => { setSelectedTag(tag); setIsArticlesOpen(true); }} 
-                onEdit={() => handleEdit(tag)} 
-                onDelete={() => handleDelete(tag)} 
-              />
-            ))}
-          </AnimatePresence>
-        </div>
+    <ManagementLayout
+      title="标签云"
+      subtitle="通过多维度的标签系统，为你的内容赋予灵魂。"
+      primaryAction={{ label: "新建标签", icon: Plus, onClick: handleNew }}
+      tabs={[{ label: '全部', value: 'ALL' }, { label: '科技', value: 'TECH' }, { label: '非科技', value: 'NO_TECH' }]}
+      activeTab={activeTab}
+      onTabChange={setActiveTab}
+      searchPlaceholder="快速检索标签..."
+      searchValue={searchQuery}
+      onSearchChange={setSearchQuery}
+      accentColor="amber"
+    >
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8 py-4 px-2">
+        <AnimatePresence mode="popLayout">
+          {filteredTags.map(tag => (
+            <TagTile 
+              key={tag.id} 
+              tag={tag} 
+              onClick={() => { setSelectedTag(tag); setIsArticlesOpen(true); }} 
+              onEdit={() => handleEdit(tag)} 
+              onDelete={() => handleDelete(tag)} 
+            />
+          ))}
+        </AnimatePresence>
+      </div>
 
-        <TagSettings 
-          isOpen={isSettingsOpen} 
-          onClose={() => setIsSettingsOpen(false)} 
-          onSave={handleSave}
-          data={selectedTag} 
-          onChange={(key, val) => setSelectedTag({ ...selectedTag, [key]: val })} 
-        />
+      <TagSettings 
+        isOpen={isSettingsOpen} 
+        onClose={() => setIsSettingsOpen(false)} 
+        onSave={handleSave}
+        data={selectedTag} 
+        onChange={(key, val) => setSelectedTag({ ...selectedTag, [key]: val })} 
+      />
 
-        <TagRelatedArticles 
-          isOpen={isArticlesOpen} 
-          onClose={() => setIsArticlesOpen(false)} 
-          tagName={selectedTag?.name || ""} 
-          articles={[
-            { id: '1', title: '深度探索 React 19 的 Concurrent 模式', slug: 'react-19', date: '2026-03-12', views: 1240 },
-          ]}
-        />
-      </ManagementLayout>
-    </motion.div>
+      <TagRelatedArticles 
+        isOpen={isArticlesOpen} 
+        onClose={() => setIsArticlesOpen(false)} 
+        tagName={selectedTag?.name || ""} 
+        articles={[
+          { id: '1', title: '深度探索 React 19 的 Concurrent 模式', slug: 'react-19', date: '2026-03-12', views: 1240 },
+        ]}
+      />
+    </ManagementLayout>
   );
 }

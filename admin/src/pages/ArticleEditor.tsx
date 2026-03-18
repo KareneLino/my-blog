@@ -1,13 +1,10 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import React from 'react';
+import { AnimatePresence } from 'motion/react';
 import { 
   ArrowLeft, 
   Eye, 
   EyeOff, 
   Settings,
-  ImageIcon,
-  CheckCircle2,
-  Loader2,
   Bold,
   Italic,
   Strikethrough,
@@ -22,14 +19,10 @@ import {
   Heading2,
   Heading3,
   Minus,
-  LucideIcon,
-  UploadCloud,
-  Link2
+  Loader2
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import { useNavigate, useParams } from 'react-router-dom';
-import { debounce } from 'lodash-es';
-import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { Button } from '../components/ui/Button';
 import { EditorToolbar, ToolbarButton } from '../components/ui/EditorToolbar';
@@ -37,6 +30,13 @@ import { useArticleEditor } from '../hooks/useArticleEditor';
 import { ArticleSettings } from '../components/ArticleSettings';
 import { ImageInsertTool } from '../components/ImageInsertTool';
 
+/**
+ * ArticleEditor - 文章编辑页面
+ * 
+ * 层级：第三层级（功能页）
+ * 布局：全屏沉浸式编辑器
+ * 特点：无 ManagementLayout，直接使用页面级容器
+ */
 export function ArticleEditor() {
   const navigate = useNavigate();
   const {
@@ -64,14 +64,14 @@ export function ArticleEditor() {
             <div className="flex flex-col ml-1">
               <AnimatePresence mode="wait">
                 {isSaving ? (
-                  <motion.div key="saving" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-2 text-zinc-400">
+                  <div className="flex items-center gap-2 text-zinc-400">
                     <Loader2 className="h-3 w-3 animate-spin" />
                     <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Saving</span>
-                  </motion.div>
+                  </div>
                 ) : lastSaved && (
-                  <motion.div key="saved" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-[10px] font-bold text-emerald-500/80 uppercase tracking-widest">
+                  <div className="text-[10px] font-bold text-emerald-500/80 uppercase tracking-widest">
                     Stored
-                  </motion.div>
+                  </div>
                 )}
               </AnimatePresence>
             </div>
@@ -177,16 +177,11 @@ export function ArticleEditor() {
           {/* 预览区 */}
           <AnimatePresence>
             {isPreviewMode && (
-              <motion.div
-                initial={{ opacity: 0, x: 30 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 30 }}
-                className="flex-1 border-l border-zinc-200/10 dark:border-zinc-700/20 pl-16 overflow-y-auto scrollbar-hidden py-4"
-              >
+              <div className="flex-1 border-l border-zinc-200/10 dark:border-zinc-700/20 pl-16 overflow-y-auto scrollbar-hidden py-4">
                 <div className="prose dark:prose-invert prose-zinc max-w-none prose-headings:font-serif prose-p:text-lg prose-p:leading-[2.1]">
                   <ReactMarkdown>{content}</ReactMarkdown>
                 </div>
-              </motion.div>
+              </div>
             )}
           </AnimatePresence>
         </div>

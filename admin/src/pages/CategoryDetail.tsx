@@ -1,7 +1,5 @@
 import React from 'react';
-import { motion } from 'motion/react';
 import { 
-  ArrowLeft, 
   Settings, 
   Search,
   Edit3,
@@ -11,13 +9,14 @@ import {
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
-import { useCategoryDetail, CategoryDetailData, CategoryArticle } from '../hooks/useCategoryDetail';
+import { useCategoryDetail } from '../hooks/useCategoryDetail';
 import { CategorySettings } from '../components/CategorySettings';
+import { DetailLayout } from '../components/layout/DetailLayout';
 
 /**
  * 分类海报侧栏组件 (Left Sidebar)
  */
-function CategoryHero({ data }: { data: CategoryDetailData }) {
+function CategoryHero({ data }: { data: any }) {
   return (
     <div className="w-full lg:w-[400px] xl:w-[480px] shrink-0 lg:sticky lg:top-8 h-auto lg:h-[calc(100vh-64px)] flex flex-col gap-6">
       {/* 封面与核心信息卡片 */}
@@ -82,17 +81,14 @@ function ArticleCard({
   onEdit, 
   onDelete 
 }: { 
-  article: CategoryArticle; 
+  article: any; 
   index: number; 
   onOpen: () => void;
   onEdit: () => void;
   onDelete: () => void;
 }) {
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05, type: 'spring', damping: 25 }}
+    <div 
       onClick={onOpen}
       className="group bg-white dark:bg-zinc-900/80 border border-zinc-200/60 dark:border-zinc-800/60 rounded-[2.5rem] p-8 hover:shadow-2xl hover:shadow-zinc-900/5 dark:hover:shadow-black/50 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all duration-500 cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-6"
     >
@@ -124,12 +120,16 @@ function ArticleCard({
           <Trash2 className="h-5 w-5" />
         </Button>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
 /**
- * 分类详情主页面组件
+ * CategoryDetail - 分类详情页面
+ * 
+ * 层级：第二层级（详情页）
+ * 布局：使用 DetailLayout
+ * 特点：左侧 Hero + 右侧列表的双栏布局
  */
 export function CategoryDetail() {
   const {
@@ -146,62 +146,58 @@ export function CategoryDetail() {
   } = useCategoryDetail();
 
   return (
-    <div className="max-w-[1600px] mx-auto flex flex-col lg:flex-row min-h-screen px-4 sm:px-8 py-8 gap-8 lg:gap-12 relative">
-      
-      <CategoryHero data={categoryData} />
+    <DetailLayout
+      title=""
+      backPath="/categories"
+      actions={
+        <Button 
+          variant="secondary" 
+          onClick={() => setIsSettingsOpen(true)}
+          className="rounded-2xl px-6 h-11 font-bold shadow-sm"
+        >
+          <Settings className="h-4 w-4 mr-2" />
+          配置此分类
+        </Button>
+      }
+    >
+      <div className="flex flex-col lg:flex-row min-h-screen gap-8 lg:gap-12">
+        {/* 左侧：分类海报 */}
+        <CategoryHero data={categoryData} />
 
-      {/* 右侧：文章时间线与管理区 */}
-      <div className="flex-1 w-full pt-2 lg:pt-0 pb-32 max-w-4xl mx-auto lg:mx-0 lg:pl-10 flex flex-col">
-        
-        {/* 顶部操作区 (Top Actions) */}
-        <div className="flex items-center justify-between mb-12 pl-2">
-          <button 
-            onClick={() => navigate('/categories')}
-            className="h-12 w-12 rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:shadow-md transition-all flex items-center justify-center cursor-pointer group"
-          >
-            <ArrowLeft className="h-6 w-6 transition-transform group-hover:-translate-x-1" />
-          </button>
+        {/* 右侧：文章时间线与管理区 */}
+        <div className="flex-1 w-full pt-2 lg:pt-0 pb-32 max-w-4xl mx-auto lg:mx-0 lg:pl-10 flex flex-col">
           
-          <Button 
-            variant="secondary" 
-            onClick={() => setIsSettingsOpen(true)}
-            className="rounded-2xl px-6 h-11 font-bold shadow-sm"
-          >
-            <Settings className="h-4 w-4 mr-2" />
-            配置此分类
-          </Button>
-        </div>
-
-        {/* 工具栏 */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8">
-          <div>
-            <h3 className="text-2xl font-bold text-zinc-900 dark:text-white pl-1 font-sans">全部收录文章</h3>
-            <p className="text-sm text-zinc-500 mt-1 pl-1 font-sans">按最后修改时间排序</p>
+          {/* 工具栏 */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8">
+            <div>
+              <h3 className="text-2xl font-bold text-zinc-900 dark:text-white pl-1 font-sans">全部收录文章</h3>
+              <p className="text-sm text-zinc-500 mt-1 pl-1 font-sans">按最后修改时间排序</p>
+            </div>
+            <div className="relative w-full sm:w-80">
+              <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+              <input 
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="搜索文章..."
+                className="w-full bg-zinc-100 dark:bg-zinc-900/50 border-none rounded-full pl-12 pr-4 py-3.5 text-sm focus:ring-2 ring-zinc-900/10 dark:ring-white/10 transition-all outline-none font-sans"
+              />
+            </div>
           </div>
-          <div className="relative w-full sm:w-80">
-            <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
-            <input 
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="搜索文章..."
-              className="w-full bg-zinc-100 dark:bg-zinc-900/50 border-none rounded-full pl-12 pr-4 py-3.5 text-sm focus:ring-2 ring-zinc-900/10 dark:ring-white/10 transition-all outline-none font-sans"
-            />
-          </div>
-        </div>
 
-        {/* 文章列表 */}
-        <div className="space-y-6">
-          {filteredArticles.map((article, index) => (
-            <ArticleCard 
-              key={article.id}
-              article={article}
-              index={index}
-              onOpen={() => openOriginalLink(article.slug)}
-              onEdit={() => navigate(`/articles/edit/${article.id}`)}
-              onDelete={() => handleDeleteArticle(article.id)}
-            />
-          ))}
+          {/* 文章列表 */}
+          <div className="space-y-6">
+            {filteredArticles.map((article, index) => (
+              <ArticleCard 
+                key={article.id}
+                article={article}
+                index={index}
+                onOpen={() => openOriginalLink(article.slug)}
+                onEdit={() => navigate(`/articles/edit/${article.id}`)}
+                onDelete={() => handleDeleteArticle(article.id)}
+              />
+            ))}
+          </div>
         </div>
       </div>
 
@@ -212,6 +208,6 @@ export function CategoryDetail() {
         data={categoryData}
         onChange={updateMetadata}
       />
-    </div>
+    </DetailLayout>
   );
 }
