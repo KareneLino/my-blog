@@ -78,12 +78,8 @@ const statsConfig = [
  * Dashboard - 工作台页面
  * 
  * 权限控制：
- * - 移动端 (< 768px): 仅查看权限，隐藏"撰写新文章"按钮
- * - 桌面端 (≥ 768px): 完整权限，显示所有操作按钮
- * 
- * 响应式设计：
- * - 手机 (< 768px): 1-2列，仅下载报告按钮
- * - 平板/桌面 (≥ 768px): 2-4列，完整操作按钮
+ * - 移动端 (< 768px): 仅查看权限，只显示"下载报告"按钮
+ * - 桌面端 (≥ 768px): 完整权限，显示"下载报告" + "撰写新文章"按钮
  */
 export function Dashboard() {
   const navigate = useNavigate();
@@ -94,15 +90,11 @@ export function Dashboard() {
       subtitle="欢迎回来，Karene。这是你最近 7 天的创作概览。"
       showFilterBar={false}
       accentColor="blue"
-      primaryAction={{
-        label: "撰写新文章",
-        icon: Plus,
-        onClick: () => navigate('/articles/new')
-      }}
+      // 不在 primaryAction 放置按钮，全部放在 headerActions 统一控制
       headerActions={
         <>
-          {/* 下载报告 - 所有设备可见 */}
-          <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">
+          {/* 下载报告 - 所有设备可见，但移动端只显示图标 */}
+          <button className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">
             <Download className="h-4 w-4" />
             <span className="hidden sm:inline">下载报告</span>
           </button>
@@ -133,7 +125,7 @@ export function Dashboard() {
               stat.bgColor
             )} />
             
-            {/* 统一布局：图标左上 + 数字中 + 趋势下 */}
+            {/* 统一布局 */}
             <div className="p-1">
               {/* 顶部：标签 + 图标 */}
               <div className="flex justify-between items-start mb-3">
