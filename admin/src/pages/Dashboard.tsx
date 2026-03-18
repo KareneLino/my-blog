@@ -245,37 +245,6 @@ export function Dashboard() {
           </ResponsiveContainer>
         </div>
       </Card>
-
-      {/* 平板快捷操作 - 仅在平板显示 (768px - 1279px) */}
-      <div className="hidden md:grid xl:hidden grid-cols-2 gap-4 mt-6">
-        <Card 
-          hoverable 
-          animated={false}
-          className="p-4 flex items-center gap-3 cursor-pointer group"
-          onClick={() => navigate('/articles/new')}
-        >
-          <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center group-hover:bg-blue-500 transition-colors">
-            <Plus className="h-5 w-5 text-blue-500 group-hover:text-white" />
-          </div>
-          <div>
-            <div className="font-bold text-zinc-900 dark:text-zinc-50 text-sm">新建文章</div>
-            <div className="text-xs text-zinc-500">开始创作</div>
-          </div>
-        </Card>
-        <Card 
-          hoverable 
-          animated={false}
-          className="p-4 flex items-center gap-3 cursor-pointer group"
-        >
-          <div className="h-10 w-10 rounded-xl bg-emerald-500/10 flex items-center justify-center group-hover:bg-emerald-500 transition-colors">
-            <Download className="h-5 w-5 text-emerald-500 group-hover:text-white" />
-          </div>
-          <div>
-            <div className="font-bold text-zinc-900 dark:text-zinc-50 text-sm">导出数据</div>
-            <div className="text-xs text-zinc-500">下载报告</div>
-          </div>
-        </Card>
-      </div>
     </ManagementLayout>
   );
 }
