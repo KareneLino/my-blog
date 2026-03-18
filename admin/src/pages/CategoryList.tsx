@@ -1,10 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Edit3, 
-  Trash2, 
-  Plus
-} from 'lucide-react';
+import { Edit3, Trash2, Plus } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { useApp } from '../context/AppContext';
 import { ManagementLayout } from '../components/layout/ManagementLayout';
@@ -36,13 +32,6 @@ const categories = [
 
 /**
  * CategoryList - 分类管理页面
- * 
- * 响应式设计：
- * - 网格: grid-cols-1 sm:grid-cols-2 xl:grid-cols-3
- * - 卡片高度: h-[240px] sm:h-[280px] lg:h-[320px]
- * - 触控: 按钮最小 44px，操作反馈更明显
- * 
- * 层级：第一层级（导航页）
  */
 export function CategoryList() {
   const navigate = useNavigate();
@@ -89,7 +78,6 @@ export function CategoryList() {
       searchPlaceholder="搜索分类名称..."
       accentColor="emerald"
     >
-      {/* 响应式网格 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
         {categories.map((category) => (
           <Card 
@@ -100,7 +88,6 @@ export function CategoryList() {
             onClick={() => navigate(`/categories/${category.id}`)}
             className="group relative overflow-hidden flex flex-col border-white/20 dark:border-zinc-800/50 shadow-2xl cursor-pointer h-[240px] sm:h-[280px] lg:h-[320px]"
           >
-            {/* 背景图 */}
             <div className="absolute inset-0 z-0">
               <img 
                 src={category.coverImage} 
@@ -112,7 +99,6 @@ export function CategoryList() {
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-500" />
             </div>
 
-            {/* 文章计数 - 左上角 */}
             <div className="absolute top-4 left-4 z-10">
               <div className="px-3 py-1.5 bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl shadow-lg">
                 <span className="text-xs sm:text-sm font-serif font-bold text-white tracking-wider">
@@ -121,7 +107,6 @@ export function CategoryList() {
               </div>
             </div>
 
-            {/* 操作按钮 - 右上角 */
             <div className="absolute top-4 right-4 z-10 flex gap-2 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-300 sm:translate-x-2 sm:group-hover:translate-x-0">
               <button 
                 onClick={(e) => { e.stopPropagation(); handleEdit(category); }}
@@ -139,17 +124,15 @@ export function CategoryList() {
               </button>
             </div>
 
-            {/* 底部内容 */}
             <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-6 lg:p-8 z-10">
               <div className="flex flex-col gap-2 sm:gap-3">
                 <h3 className="text-xl sm:text-2xl lg:text-3xl font-serif font-bold text-white drop-shadow-lg tracking-tight leading-tight">
                   {category.name}
                 </h3>
                 
-                {/* 描述 - 移动端默认显示一行，桌面端悬停展开 */}
                 <div className="overflow-hidden transition-all duration-500">
                   <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed line-clamp-1 sm:line-clamp-2 sm:group-hover:line-clamp-none italic opacity-90 sm:opacity-0 sm:group-hover:opacity-100 sm:group-hover:mt-2 transition-all">
-                    "{category.description}"
+                    {category.description}
                   </p>
                   <p className="text-[10px] sm:text-xs font-mono font-bold text-emerald-400 uppercase tracking-wider mt-1 sm:mt-2 opacity-80 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                     /{category.slug}
