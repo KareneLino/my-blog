@@ -1,147 +1,161 @@
-/**
- * Sidebar - 悬浮编辑风侧边栏
- * 复用登录页角色切换器的弹簧动画交互
- */
-
-import { useState } from 'react';
-import { motion } from 'motion/react';
-import {
-  Feather,
-  LayoutDashboard,
-  FileText,
-  FolderOpen,
-  Tag,
-  Settings,
+import React from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { 
+  LayoutDashboard, 
+  FileText, 
+  FolderTree, 
+  Tag, 
+  Settings, 
+  Users,
   LogOut,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Feather
 } from 'lucide-react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { cn } from '../../lib/utils';
+import { useApp } from '../../context/AppContext';
+import { toast } from 'sonner';
 
-interface NavItem {
-  id: string;
-  label: string;
-  icon: React.ReactNode;
-}
-
-interface NavGroup {
-  title: string;
-  items: NavItem[];
-}
-
-const navGroups: NavGroup[] = [
-  {
-    title: '概览',
-    items: [
-      { id: 'dashboard', label: '仪表盘', icon: <LayoutDashboard className="w-4 h-4" /> },
-    ],
-  },
-  {
-    title: '内容管理',
-    items: [
-      { id: 'articles', label: '文章管理', icon: <FileText className="w-4 h-4" /> },
-      { id: 'categories', label: '分类管理', icon: <FolderOpen className="w-4 h-4" /> },
-      { id: 'tags', label: '标签管理', icon: <Tag className="w-4 h-4" /> },
-    ],
-  },
-  {
-    title: '系统',
-    items: [
-      { id: 'settings', label: '系统设置', icon: <Settings className="w-4 h-4" /> },
-    ],
-  },
+const menuItems = [
+  { icon: LayoutDashboard, label: '工作台', path: '/', color: 'text-indigo-500' },
+  { icon: FileText, label: '内容管理', path: '/articles', color: 'text-blue-500' },
+  { icon: FolderTree, label: '分类', path: '/categories', color: 'text-emerald-500' },
+  { icon: Tag, label: '标签', path: '/tags', color: 'text-amber-500' },
+  { icon: Users, label: '用户管理', path: '/users', color: 'text-purple-500' },
+  { icon: Settings, label: '系统设置', path: '/settings', color: 'text-zinc-900 dark:text-white' },
 ];
 
+/**
+ * Sidebar 侧边栏组件
+ * 采用 Glass-Primer Fusion 规范：大气字号、同步动效、工业级对齐
+ */
 export function Sidebar() {
-  const [activeId, setActiveId] = useState('dashboard');
+  const { isSidebarCollapsed, toggleSidebar, confirm } = useApp();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    confirm({
+      title: '退出登录',
+      content: '确定要结束当前的创作会话吗？未保存的更改可能会丢失。',
+      confirmText: '退出',
+      variant: 'danger',
+      onConfirm: () => {
+        toast.info('已安全退出');
+        navigate('/login');
+      }
+    });
+  };
 
   return (
-    <div className="glass-sidebar h-full w-56 flex flex-col p-5">
-      {/* ========== 品牌标识区 ========== */}
-      <div className="flex items-center gap-3 mb-8 px-1">
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-lg"
-        >
-          <Feather className="h-5 w-5" />
-        </motion.div>
-        <div>
-          <h1 className="font-serif text-lg font-bold text-zinc-900 dark:text-white tracking-widest">
-            字里行间
-          </h1>
-          <p className="text-[10px] text-zinc-500 dark:text-zinc-400 tracking-wide">
-            创作后台
-          </p>
+    <motion.aside
+      initial={false}
+      animate={{ 
+        width: isSidebarCollapsed ? 100 : 300,
+      }}
+      transition={{ type: 'spring', stiffness: 300, damping: 35 }}
+      className="fixed left-0 top-0 h-full z-40 p-4 hidden lg:block"
+    >
+      <div className="h-full glass-sidebar flex flex-col overflow-hidden relative border-white/30 dark:border-zinc-700/50 shadow-2xl">
+        {/* Logo Section */}
+        <div className="h-24 flex items-center justify-center shrink-0">
+          <div className={cn(
+            "flex items-center transition-all duration-500",
+            isSidebarCollapsed ? "justify-center" : "px-6 w-full gap-4"
+          )}>
+            <div className="h-12 w-12 shrink-0 rounded-2xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 flex items-center justify-center shadow-xl">
+              <Feather className="h-6 w-6" />
+            </div>
+            <AnimatePresence>
+              {!isSidebarCollapsed && (
+                <motion.span 
+                  initial={{ opacity: 0, width: 0, x: -10 }}
+                  animate={{ opacity: 1, width: 'auto', x: 0 }}
+                  exit={{ opacity: 0, width: 0, x: -10 }}
+                  className="text-2xl font-serif font-bold text-zinc-900 dark:text-white whitespace-nowrap overflow-hidden"
+                >
+                  字里行间
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+
+        {/* Navigation Section */}
+        <nav className="flex-1 flex flex-col items-center px-3 space-y-3 overflow-y-auto overflow-x-hidden scrollbar-hidden">
+          {menuItems.map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              className={({ isActive }) => cn(
+                'group relative flex items-center rounded-2xl transition-all duration-300 h-14',
+                isSidebarCollapsed ? 'w-14 justify-center' : 'w-full px-5 gap-4',
+                isActive 
+                  ? 'text-zinc-900 dark:text-white' 
+                  : 'text-zinc-500 dark:text-zinc-400 hover:bg-white/50 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-200'
+              )}
+            >
+              {({ isActive }) => (
+                <>
+                  {isActive && (
+                    <motion.div
+                      layoutId="active-pill"
+                      className="absolute inset-0 bg-white dark:bg-zinc-800 rounded-2xl shadow-md border border-white/50 dark:border-zinc-700/50 z-0"
+                      transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                    />
+                  )}
+                  <item.icon className={cn(
+                    "h-6 w-6 z-10 shrink-0 transition-transform duration-300 group-hover:scale-110",
+                    isActive ? item.color : "text-zinc-400 dark:text-zinc-500"
+                  )} />
+                  <AnimatePresence>
+                    {!isSidebarCollapsed && (
+                      <motion.span 
+                        initial={{ opacity: 0, width: 0 }}
+                        animate={{ opacity: 1, width: 'auto' }}
+                        exit={{ opacity: 0, width: 0 }}
+                        className="text-base font-bold z-10 whitespace-nowrap overflow-hidden"
+                      >
+                        {item.label}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </>
+              )}
+            </NavLink>
+          ))}
+        </nav>
+
+        {/* Footer Section */}
+        <div className="px-3 pb-6 mt-auto shrink-0">
+          <div className="mb-4 h-px bg-zinc-200/20 dark:bg-zinc-700/30 w-full" />
+          
+          <div className={cn(
+            "flex transition-all duration-500 gap-2",
+            isSidebarCollapsed ? "flex-col items-center" : "flex-row justify-between px-1"
+          )}>
+            <button
+              onClick={toggleSidebar}
+              title={isSidebarCollapsed ? "展开边栏" : "收起边栏"}
+              className="h-12 w-12 flex items-center justify-center rounded-2xl text-zinc-500 hover:bg-white/50 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-white transition-all cursor-pointer group"
+            >
+              {isSidebarCollapsed ? (
+                <PanelLeftOpen className="h-6 w-6 transition-transform duration-300 group-hover:scale-110" />
+              ) : (
+                <PanelLeftClose className="h-6 w-6 transition-transform duration-300 group-hover:scale-110" />
+              )}
+            </button>
+
+            <button 
+              onClick={handleLogout}
+              title="退出登录"
+              className="h-12 w-12 flex items-center justify-center rounded-2xl text-zinc-500 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500 transition-all cursor-pointer group"
+            >
+              <LogOut className="h-6 w-6 transition-transform duration-300 group-hover:scale-110" />
+            </button>
+          </div>
         </div>
       </div>
-
-      {/* ========== 导航菜单 ========== */}
-      <nav className="flex-1 space-y-6">
-        {navGroups.map((group) => (
-          <div key={group.title}>
-            {/* 分组标题 - 微型标签样式 */}
-            <h3 className="text-micro mb-3 px-3">{group.title}</h3>
-
-            {/* 导航项 - 复用登录页弹簧动画 */}
-            <ul className="space-y-1">
-              {group.items.map((item) => (
-                <li key={item.id}>
-                  <button
-                    onClick={() => setActiveId(item.id)}
-                    className={`
-                      relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl
-                      text-sm font-bold transition-all duration-300
-                      ${activeId === item.id ? 'nav-pill-active' : 'nav-pill-inactive'}
-                    `}
-                  >
-                    {/* 选中态背景 - 登录页同款弹簧动画 */}
-                    {activeId === item.id && (
-                      <motion.div
-                        layoutId="sidebar-active-pill"
-                        className="absolute inset-0 bg-zinc-900 dark:bg-white rounded-xl shadow-sm -z-10"
-                        initial={false}
-                        transition={{
-                          type: 'spring',
-                          stiffness: 300,
-                          damping: 25,
-                        }}
-                      />
-                    )}
-
-                    {/* 图标 */}
-                    <span
-                      className={
-                        activeId === item.id
-                          ? 'text-white dark:text-zinc-900'
-                          : 'text-zinc-400 dark:text-zinc-500'
-                      }
-                    >
-                      {item.icon}
-                    </span>
-
-                    {/* 标签 */}
-                    <span className="relative z-10">{item.label}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </nav>
-
-      {/* ========== 底部操作区 ========== */}
-      <div className="pt-4 border-t border-zinc-200/50 dark:border-zinc-700/30">
-        <button
-          className="
-            w-full flex items-center gap-3 px-3 py-2.5 rounded-xl
-            text-sm font-bold text-zinc-500 dark:text-zinc-400
-            hover:text-red-600 dark:hover:text-red-400
-            transition-colors duration-200
-          "
-        >
-          <LogOut className="w-4 h-4" />
-          <span>退出登录</span>
-        </button>
-      </div>
-    </div>
+    </motion.aside>
   );
 }

@@ -1,15 +1,13 @@
-/**
- * AdminLayout - 沉浸式全局布局
- * 符合「沉浸式/编辑风」设计规范
- */
-
+import React, { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import { useTheme } from '../ThemeProvider';
+import { motion } from 'motion/react';
 import { Sidebar } from './Sidebar';
-import { ThemeToggle } from '../ThemeToggle';
+import { Header } from './Header';
+import { useApp } from '../../context/AppContext';
+import { useTheme } from '../ThemeProvider';
 
 export function AdminLayout() {
+  const { isSidebarCollapsed } = useApp();
   const { theme } = useTheme();
   const [isDark, setIsDark] = useState(false);
 
@@ -24,51 +22,49 @@ export function AdminLayout() {
   }, [theme]);
 
   return (
-    <div className="h-screen w-full relative overflow-hidden font-sans">
-      {/* ========== 背景层（继承登录页的背景逻辑）========== */}
-      <div className="absolute inset-0 z-0 bg-zinc-100 dark:bg-zinc-950 transition-colors duration-700">
-        {/* 日间背景 */}
+    <div className="relative min-h-screen font-sans overflow-x-hidden">
+      {/* 全局背景图层 (同步 LoginPage 逻辑) */}
+      <div className="fixed inset-0 z-0 bg-zinc-100 dark:bg-zinc-950 transition-colors duration-700">
         <img
-          src="https://picsum.photos/seed/brightworkspace/1920/1080?blur=4"
+          src="https://picsum.photos/seed/brightworkspace/1920/1080?blur=10"
           alt="Day background"
           referrerPolicy="no-referrer"
-          className={`absolute inset-0 w-full h-full object-cover scale-105 transition-opacity duration-1000 ${
-            isDark ? 'opacity-0' : 'opacity-100'
-          }`}
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${isDark ? 'opacity-0' : 'opacity-100'}`}
         />
-        {/* 夜间背景 */}
         <img
-          src="https://picsum.photos/seed/darknightscape/1920/1080?blur=4"
+          src="https://picsum.photos/seed/darknightscape/1920/1080?blur=10"
           alt="Night background"
           referrerPolicy="no-referrer"
-          className={`absolute inset-0 w-full h-full object-cover scale-105 transition-opacity duration-1000 ${
-            isDark ? 'opacity-100' : 'opacity-0'
-          }`}
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${isDark ? 'opacity-100' : 'opacity-0'}`}
         />
+        {/* 全局毛玻璃遮罩 - 弱化明度 */}
+        <div className="absolute inset-0 bg-zinc-50/60 dark:bg-zinc-950/80 backdrop-blur-[100px] transition-colors duration-700" />
       </div>
 
-      {/* ========== 极强高斯模糊遮罩层 ========== */}
-      <div className="absolute inset-0 z-[1] immersive-backdrop transition-colors duration-700" />
+      <div className="relative z-10">
+        <Sidebar />
 
-      {/* ========== 主布局层 ========== */}
-      <div className="relative z-10 h-full w-full flex p-4 gap-4">
-        {/* 左侧：悬浮侧边栏 */}
-        <aside className="flex-shrink-0 h-full">
-          <Sidebar />
-        </aside>
-
-        {/* 右侧：内容区域 */}
-        <main className="flex-1 h-full overflow-hidden flex flex-col">
-          {/* 顶部工具栏 */}
-          <div className="flex justify-end mb-4">
-            <ThemeToggle />
-          </div>
+        <motion.main
+          initial={false}
+          animate={{ 
+            paddingLeft: isSidebarCollapsed ? 100 : 300,
+          }}
+          transition={{ type: 'spring', stiffness: 300, damping: 35 }}
+          className="flex flex-col min-h-screen"
+        >
+          <Header />
           
-          {/* 内容滚动区 */}
-          <div className="flex-1 overflow-y-auto scrollbar-thin pr-2">
-            <Outlet />
+          <div className="flex-1 p-6 lg:p-10">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+              className="h-full w-full"
+            >
+              <Outlet />
+            </motion.div>
           </div>
-        </main>
+        </motion.main>
       </div>
     </div>
   );

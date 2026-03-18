@@ -24,11 +24,11 @@
    * 用于：数据卡片、表格容器、内容区域
    */
   .glass-panel {
-    @apply bg-white/40 dark:bg-zinc-900/40;
-    @apply backdrop-blur-md;
+    @apply bg-white/50 dark:bg-zinc-900/60;
+    @apply backdrop-blur-xl;
     @apply rounded-2xl;
-    @apply border border-white/20 dark:border-white/10;
-    @apply shadow-[0_2px_8px_-2px_rgba(0,0,0,0.04)];
+    @apply border border-white/40 dark:border-white/10;
+    @apply shadow-[0_8px_32px_rgba(0,0,0,0.04)];
   }
 
   /*
@@ -125,7 +125,25 @@
   }
 }
 
-/* 选中文字颜色 */
+/* 全局选中样式 - 日间模式：深底白字 */
 ::selection {
-  @apply bg-zinc-900/10 dark:bg-white/10;
+  background-color: #18181b; /* zinc-900 */
+  color: #ffffff;
+}
+
+/* 全局选中样式 - 夜间模式：亮底黑字 */
+.dark ::selection {
+  background-color: #f4f4f5; /* zinc-100 */
+  color: #09090b; /* zinc-950 */
+}
+
+/* 针对输入框的适配 */
+input::selection, textarea::selection {
+  background-color: #18181b;
+  color: #ffffff;
+}
+
+.dark input::selection, .dark textarea::selection {
+  background-color: #f4f4f5;
+  color: #09090b;
 }
