@@ -77,15 +77,13 @@ const statsConfig = [
 /**
  * Dashboard - 工作台页面
  * 
- * 响应式设计策略（统一卡片内部布局）：
+ * 权限控制：
+ * - 移动端 (< 768px): 仅查看权限，隐藏"撰写新文章"按钮
+ * - 桌面端 (≥ 768px): 完整权限，显示所有操作按钮
  * 
- * 核心原则：所有尺寸使用相同的卡片内部布局（图标左上 + 数字中 + 趋势下）
- * 仅调整列数和间距
- * 
- * 断点：
- * - 手机 (< 768px): 1-2列，紧凑间距
- * - 平板 (768px - 1279px): 2列（iPad Pro 竖屏也落入此区间），舒适间距
- * - 桌面 (≥ 1280px): 4列，宽松间距
+ * 响应式设计：
+ * - 手机 (< 768px): 1-2列，仅下载报告按钮
+ * - 平板/桌面 (≥ 768px): 2-4列，完整操作按钮
  */
 export function Dashboard() {
   const navigate = useNavigate();
@@ -102,13 +100,25 @@ export function Dashboard() {
         onClick: () => navigate('/articles/new')
       }}
       headerActions={
-        <button className="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">
-          <Download className="h-4 w-4" />
-          下载报告
-        </button>
+        <>
+          {/* 下载报告 - 所有设备可见 */}
+          <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">
+            <Download className="h-4 w-4" />
+            <span className="hidden sm:inline">下载报告</span>
+          </button>
+          
+          {/* 撰写新文章 - 仅桌面端可见 (≥ 768px) */}
+          <button 
+            onClick={() => navigate('/articles/new')}
+            className="hidden md:flex items-center gap-2 px-4 py-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-xl text-sm font-bold hover:opacity-90 transition-opacity"
+          >
+            <Plus className="h-4 w-4" />
+            撰写新文章
+          </button>
+        </>
       }
     >
-      {/* 统计卡片区域 - 统一内部布局，仅列数响应 */}
+      {/* 统计卡片区域 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-5 xl:gap-6">
         {statsConfig.map((stat) => (
           <Card 
