@@ -7,15 +7,18 @@ import { useApp } from '../../context/AppContext';
 /**
  * Header - 顶部导航栏
  * 
- * 响应式设计：
- * - 移动端 (<lg): 显示汉堡菜单 + Logo，有背景横条
- * - 桌面端 (>=lg): 仅显示右侧工具按钮，透明无横条（Sidebar 已提供导航）
+ * 结构设计：
+ * - 默认（所有主题、所有屏幕）：透明背景，无横条
+ * - 移动端 (<lg)：添加背景横条（白色/暗色半透明）
+ * - 桌面端 (>=lg)：保持透明（Sidebar 已提供导航）
  */
 export function Header() {
   const { setIsMobileMenuOpen } = useApp();
 
   return (
-    <header className="sticky top-0 z-30 w-full h-16 flex items-center px-4 sm:px-6 lg:px-10 lg:bg-transparent lg:backdrop-blur-none lg:border-b-0 bg-white/30 dark:bg-zinc-900/30 backdrop-blur-xl border-b border-white/20 dark:border-zinc-800/20">
+    <header className="sticky top-0 z-30 w-full h-16 flex items-center px-4 sm:px-6 lg:px-10 bg-transparent lg:bg-transparent 
+      lg:backdrop-blur-none lg:border-b-0 
+      max-lg:bg-white/30 max-lg:dark:bg-zinc-900/30 max-lg:backdrop-blur-xl max-lg:border-b max-lg:border-white/20 max-lg:dark:border-zinc-800/20">
       {/* 左侧：移动端汉堡菜单 + Logo */}
       <div className="flex items-center gap-4 lg:hidden">
         <Button
