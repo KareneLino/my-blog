@@ -27,12 +27,20 @@ const INITIAL_TAGS = [
   { id: '12', name: 'Design', color: '', effect: 'none', articleCount: 19, isTech: false },
 ];
 
+/**
+ * TagTile - 标签卡片组件
+ * 
+ * 响应式设计：
+ * - 高度: h-[120px] sm:h-[140px]
+ * - 内边距: p-4 sm:p-6
+ * - 触控: 按钮最小 44px
+ */
 function TagTile({ tag, onClick, onEdit, onDelete }: { tag: any, onClick: () => void, onEdit: () => void, onDelete: () => void }) {
   const brand = useMemo(() => tag.isTech ? discoverBrand(tag.name) : null, [tag.name, tag.isTech]);
   const activeColor = tag.color || brand?.color || getTagColor(tag.name);
 
   const glowStyle = tag.effect === 'glow' ? {
-    boxShadow: `0 15px 40px -10px ${activeColor}${activeColor.length === 7 ? '44' : ''}`,
+    boxShadow: `0 10px 30px -8px ${activeColor}${activeColor.length === 7 ? '44' : ''}`,
   } : {};
 
   return (
@@ -41,45 +49,62 @@ function TagTile({ tag, onClick, onEdit, onDelete }: { tag: any, onClick: () => 
         onClick={onClick}
         style={{ ...glowStyle }}
         className={cn(
-          "h-[140px] min-w-[260px] p-6 rounded-[2.5rem] border backdrop-blur-3xl transition-all duration-500 cursor-pointer flex flex-col justify-between overflow-hidden",
-          "bg-white/80 dark:bg-zinc-900/80 border-white/40 dark:border-zinc-800 shadow-xl hover:shadow-2xl hover:bg-white dark:hover:bg-zinc-800"
+          "h-[120px] sm:h-[140px] p-4 sm:p-6 rounded-2xl sm:rounded-[2.5rem] border backdrop-blur-3xl transition-all duration-500 cursor-pointer flex flex-col justify-between overflow-hidden",
+          "bg-white/80 dark:bg-zinc-900/80 border-white/40 dark:border-zinc-800 shadow-lg hover:shadow-xl hover:bg-white dark:hover:bg-zinc-800 active:scale-[0.98]"
         )}
       >
-        <div style={{ backgroundColor: activeColor }} className="absolute left-0 top-8 bottom-8 w-1.5 rounded-r-full opacity-40 group-hover:opacity-100 transition-opacity" />
+        {/* 左侧色条 */}
+        <div style={{ backgroundColor: activeColor }} className="absolute left-0 top-6 bottom-6 sm:top-8 sm:bottom-8 w-1 sm:w-1.5 rounded-r-full opacity-40 group-hover:opacity-100 transition-opacity" />
         
-        <div className="flex justify-between items-start">
-          <div className="flex items-center gap-4">
-            <div className="h-12 w-12 rounded-2xl bg-zinc-900/5 dark:bg-white/5 border border-zinc-200/10 dark:border-white/10 flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform duration-500">
+        {/* 顶部：图标 + 名称 */}
+        <div className="flex justify-between items-start pl-2 sm:pl-3">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl sm:rounded-2xl bg-zinc-900/5 dark:bg-white/5 border border-zinc-200/10 dark:border-white/10 flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform duration-500">
               {brand ? (
                 <svg 
                   role="img" 
                   viewBox="0 0 24 24" 
-                  className="h-6 w-6 fill-current" 
+                  className="h-5 w-5 sm:h-6 sm:w-6 fill-current" 
                   style={{ color: activeColor }}
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path d={brand.path} />
                 </svg>
               ) : (
-                <Feather style={{ color: activeColor }} className="h-6 w-6" />
+                <Feather style={{ color: activeColor }} className="h-5 w-5 sm:h-6 sm:w-6" />
               )}
             </div>
             <div className="flex flex-col">
-              <span className="text-xl font-black text-zinc-900 dark:text-white tracking-tight">{tag.name}</span>
-              <span className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest opacity-60">{tag.isTech ? 'System Tech' : 'Humanity'}</span>
+              <span className="text-base sm:text-xl font-black text-zinc-900 dark:text-white tracking-tight">{tag.name}</span>
+              <span className="text-[9px] sm:text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-wider opacity-60">{tag.isTech ? 'System Tech' : 'Humanity'}</span>
             </div>
           </div>
-          <ArrowUpRight className="h-5 w-5 text-zinc-300 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors opacity-0 group-hover:opacity-100" />
+          <ArrowUpRight className="h-4 w-4 sm:h-5 sm:w-5 text-zinc-300 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors opacity-0 group-hover:opacity-100" />
         </div>
 
-        <div className="flex justify-between items-end">
-          <div style={{ backgroundColor: `${activeColor}1A`, color: activeColor }} className="px-4 py-1.5 rounded-xl text-xs font-black font-mono flex items-center gap-2 border border-current/10">
-            <span className="h-1.5 w-1.5 rounded-full bg-current animate-pulse" />
-            {tag.articleCount} Articles
+        {/* 底部：计数 + 操作 */}
+        <div className="flex justify-between items-end pl-2 sm:pl-3">
+          <div style={{ backgroundColor: `${activeColor}1A`, color: activeColor }} className="px-3 py-1 sm:px-4 sm:py-1.5 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-black font-mono flex items-center gap-1.5 sm:gap-2 border border-current/10">
+            <span className="h-1 w-1 sm:h-1.5 sm:w-1.5 rounded-full bg-current animate-pulse" />
+            {tag.articleCount} <span className="hidden sm:inline">Articles</span>
           </div>
-          <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0">
-            <button onClick={(e) => { e.stopPropagation(); onEdit(); }} className="h-9 w-9 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-lg flex items-center justify-center hover:scale-110 active:scale-90 transition-all cursor-pointer"><Edit3 className="h-4 w-4" /></button>
-            <button onClick={(e) => { e.stopPropagation(); onDelete(); }} className="h-9 w-9 rounded-xl bg-red-500 text-white shadow-lg flex items-center justify-center hover:scale-110 active:scale-90 transition-all cursor-pointer"><Trash2 className="h-4 w-4" /></button>
+          
+          {/* 操作按钮 */}
+          <div className="flex gap-1.5 sm:gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all translate-y-0 sm:translate-y-1 sm:group-hover:translate-y-0">
+            <button 
+              onClick={(e) => { e.stopPropagation(); onEdit(); }} 
+              className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg sm:rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-md flex items-center justify-center hover:scale-110 active:scale-90 transition-all"
+              aria-label="编辑标签"
+            >
+              <Edit3 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            </button>
+            <button 
+              onClick={(e) => { e.stopPropagation(); onDelete(); }} 
+              className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg sm:rounded-xl bg-red-500 text-white shadow-md flex items-center justify-center hover:scale-110 active:scale-90 transition-all"
+              aria-label="删除标签"
+            >
+              <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            </button>
           </div>
         </div>
       </div>
@@ -90,8 +115,11 @@ function TagTile({ tag, onClick, onEdit, onDelete }: { tag: any, onClick: () => 
 /**
  * TagList - 标签管理页面
  * 
+ * 响应式设计：
+ * - 网格: grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4
+ * - 间距: gap-4 sm:gap-6 lg:gap-8
+ * 
  * 层级：第一层级（导航页）
- * 布局：使用 ManagementLayout（已内置动画）
  */
 export function TagList() {
   const { confirm } = useApp();
@@ -162,7 +190,8 @@ export function TagList() {
       onSearchChange={setSearchQuery}
       accentColor="amber"
     >
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8 py-4 px-2">
+      {/* 响应式网格 */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 py-2 sm:py-4">
         <AnimatePresence mode="popLayout">
           {filteredTags.map(tag => (
             <TagTile 
