@@ -49,31 +49,6 @@ router.use('/config', adminConfigRoutes);
 router.use('/upload', adminUploadRoutes);
 router.use('/logs', logRoutes);
 
-
-// Admin Analytics Routes
-const adminInsightsQuerySchema = z.object({
-  range: z.enum(['1h', '24h', '7d']).optional(),
-  force: z.coerce.boolean().optional(),
-});
-
-router.get(
-  '/analytics/insights',
-  validateRequest({ query: adminInsightsQuerySchema }),
-  AdminAnalyticsController.getInsights
-);
-
-// Admin view of specific author's analytics
-const authorInsightsQuerySchema = z.object({
-  range: z.enum(['7d', '30d', '90d', 'year']).optional(),
-  force: z.coerce.boolean().optional(),
-});
-
-router.get(
-  '/authors/:id/analytics/insights',
-  validateRequest({ query: authorInsightsQuerySchema }),
-  AuthorAnalyticsController.getAuthorInsights
-);
-
 // Admin Analytics Routes
 const adminInsightsQuerySchema = z.object({
   range: z.enum(['1h', '24h', '7d']).optional(),

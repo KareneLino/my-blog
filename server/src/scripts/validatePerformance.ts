@@ -12,8 +12,6 @@ import { AdminAnalyticsRepository, AuthorAnalyticsRepository } from '../reposito
 import { logger } from '../utils/logger';
 import '../models/UserModel';  // 导入 User 模型定义
 
-import '../models/UserModel';  // 导入 User 模型定义
-
 // 性能测试配置
 const CONFIG = {
   warmupRuns: 5,      // 预热次数
